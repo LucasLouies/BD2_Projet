@@ -13,7 +13,7 @@ CREATE TABLE projet.etudiants(
 CREATE TABLE projet.entreprises(
 	id_entreprise VARCHAR(3) PRIMARY KEY CHECK ( id_entreprise SIMILAR TO '^[A-Z]{3}$'),
 	mdp VARCHAR(50) NOT NULL,
-	mail VARCHAR(50) NOT NULL CHECK ( mail SIMILAR TO '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'),
+	mail VARCHAR(50) NOT NULL CHECK ( mail SIMILAR TO '^\w+\.\w+@student\.vinci\.be$'),
 	adresse VARCHAR(50) NOT NULL CHECK ( adresse <> '' )
 );
 

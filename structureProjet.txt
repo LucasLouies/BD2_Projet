@@ -1,0 +1,33 @@
+Application prof
+1- fonction bête et méchante. les checks sont déjà fait dans le create table
+2- même chose
+3- même chose encore plus simple
+4- une view
+5- une fonction pour changer l'état. un trigger pour check si on passe de l'état non validé à validé 
+    + trigger pour annulé les offres de la même entreprise
+6- une view
+7- une view
+8- une view
+
+
+Application entreprises
+1- fonction + trigger (check le format des offre de stages)
+2- fonction avec un select (pas besoin de view c'est juste une seule table n'est ce pas youssef)
+3- fonction + trigger (check si l'offre n'est pas dans l'état "attribué" ou "annulé")
+4- une view
+5- une view
+6- fonction + vérification de l'entreprise au niveau du java + triggers (check si offre n'est pas dans l'état "attribué" 
+    + check si la candidature n'est pas en état "en attente" + passer les autres candidatures de l'étudiants à "annulé" 
+    + les autres candidatures de cette offre passe en "refusé" + passer les autres offres de l'entreprise à "annulé" 
+    + les candidatures à ces offres passe en "refusé")
+7- fonction + vérification de l'entreprise au niveau du java + 
+    triggers (check état de l'offre pas "attribué" ou "annulé" + passé toutes les candidatures de cette offre à "refusé")
+
+
+Application étudiant
+1- view
+2- fonction + view ? 
+3- fonction + trigger (check si pas l'étudiant n'a pas de candidatures acceptées, si pas déjà mis une candidature sur l'offre,
+    si l'offre n'est pas déjà validé et si l'offre est au bon quadrimestre)
+4- view
+5- fonction + trigger (check état "en attente")
