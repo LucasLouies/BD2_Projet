@@ -26,14 +26,14 @@ CREATE TABLE projet.offres_stage(
 	code_offre_stage VARCHAR(4) PRIMARY KEY CHECK ( code_offre_stage SIMILAR TO '^[A-Z]{3}[0-9]{1}$'),
 	description VARCHAR(50) NOT NULL CHECK ( description <> '' ),
 	semestre VARCHAR(2) NOT NULL CHECK (semestre SIMILAR TO 'Q[1-2]'),
-	etat VARCHAR(50) NOT NULL CHECK ( etat IN('Non Validé', 'Validé', 'Attribué', 'Annulé') ),
+	etat VARCHAR(50) NOT NULL CHECK ( etat IN('Non Validée', 'Validée', 'Attribuée', 'Annulée') ) DEFAULT 'Non Validée',
 	id_etudiant INTEGER REFERENCES projet.etudiants (id_etudiant),
 	id_entreprise VARCHAR(3) REFERENCES projet.entreprises (id_entreprise) NOT NULL
 );
 
 CREATE TABLE projet.candidatures(
 	id_candidature CHARACTER(10) PRIMARY KEY,
-	etat VARCHAR(50) NOT NULL CHECK ( etat IN('En attente', 'Accepté', 'Resufé', 'Annulé')),
+	etat VARCHAR(50) NOT NULL CHECK ( etat IN('En attente', 'Acceptée', 'Refusée', 'Annulée')) DEFAULT 'En attente',
 	motivation VARCHAR(1000) NOT NULL,
 
 	code_offre_stage VARCHAR(4) REFERENCES projet.offres_stage (code_offre_stage) NOT NULL,
@@ -47,3 +47,32 @@ CREATE TABLE projet.mots_cle_stage(
     PRIMARY KEY (code_mot_cle, code_offre_stage)
 );
 
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION projet.vérification_etat_offre_stage() RETURNS TRIGGER AS $$
+DECLARE
+	
+BEGIN
+	
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_vérification_etat_offre_stage AFTER UPDATE ON projet.offres_stage
+	FOR EACH ROW EXECUTE PROCEDURE projet.vérification_etat_offre_stage();
+
+
+CREATE OR REPLACE FUNCTION projet.vérification_etat_candidature() RETURNS TRIGGER AS $$
+DECLARE
+	
+BEGIN
+	
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_vérification_etat_candidature AFTER UPDATE ON projet.candidatures
+	FOR EACH ROW EXECUTE PROCEDURE projet.vérification_etat_candidature();
