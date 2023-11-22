@@ -7,13 +7,13 @@ CREATE TABLE projet.etudiants(
 	semestre_du_stage VARCHAR(2) NOT NULL CHECK (semestre_du_stage SIMILAR TO 'Q[1-2]'),
 	mdp VARCHAR(100) NOT NULL CHECK (mdp <>''),
 	nb_candidature_en_attente INTEGER NOT NULL DEFAULT 0 CHECK ( nb_candidature_en_attente >=0 ),
-	mail VARCHAR(50) NOT NULL CHECK ( mail SIMILAR TO '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+	mail VARCHAR(50) UNIQUE NOT NULL CHECK ( mail SIMILAR TO '[\w-\.]+@([\w-]+\.)+[\w-]{2,4}')
 );
 
 CREATE TABLE projet.entreprises(
 	id_entreprise VARCHAR(3) PRIMARY KEY CHECK ( id_entreprise SIMILAR TO '^[A-Z]{3}$'),
 	mdp VARCHAR(100) NOT NULL,
-	mail VARCHAR(50) NOT NULL CHECK ( mail SIMILAR TO '^\w+\.\w+@student\.vinci\.be$'),
+	mail VARCHAR(50) NOT NULL CHECK ( mail SIMILAR TO '\w+\.\w+@student\.vinci\.be'),
 	adresse VARCHAR(100) NOT NULL CHECK ( adresse <> '' ),
 	nom VARCHAR(100) NOT NULL CHECK ( nom <> '' )
 );
@@ -24,7 +24,7 @@ CREATE TABLE projet.mots_cle(
 );
 
 CREATE TABLE projet.offres_stage(
-	code_offre_stage VARCHAR(4) PRIMARY KEY CHECK ( code_offre_stage SIMILAR TO '^[A-Z]{3}[0-9]{1}$'),
+	code_offre_stage VARCHAR(4) PRIMARY KEY CHECK ( code_offre_stage SIMILAR TO '[A-Z]{3}[0-9]{1}'),
 	description VARCHAR(50) NOT NULL CHECK ( description <> '' ),
 	semestre VARCHAR(2) NOT NULL CHECK (semestre SIMILAR TO 'Q[1-2]'),
 	etat VARCHAR(50) NOT NULL CHECK ( etat IN('Non Validée', 'Validée', 'Attribuée', 'Annulée') ) DEFAULT 'Non Validée',
@@ -125,18 +125,44 @@ BEGIN
     INSERT INTO projet.entreprises VALUES (code_offre_stage, _description, _semestre, DEFAULT, NULL, _code_entreprise);
 END;
 $$ LANGUAGE plpgsql;
+
 --Entreprise .2
+CREATE VIEW projet.voir_mots_cle AS
+    SELECT mc.libelle FROM projet.mots_cle mc;
 
 --Entreprise .3
+CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_stage VARCHAR(3), _id_mot_cle INTEGER) RETURNS INTEGER AS $$
+DECLARE
+BEGIN
+    INSERT INTO projet.mots_cle_stage VALUES (_id_mot_cle, _code_stage);
+END;
+$$ LANGUAGE plpgsql;
 
 --Entreprise .4
 
 --Entreprise .5
 
 --Entreprise .6
+CREATE OR REPLACE FUNCTION projet.selectionner_etudiant(_code_stage VARCHAR(3), _mail_etudiant VARCHAR(100)) RETURNS INTEGER AS $$
+    --L’opération échouera si l’offre de stage n’est pas une offre de l’entreprise => A FAIRE EN JAVA
+DECLARE
+    id_candidat INTEGER;
+BEGIN
+    UPDATE projet.offres_stage SET etat = 'Attribuée' WHERE code_offre_stage = _code_stage;
+
+    SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO id_candidat;
+    UPDATE projet.candidatures SET etat = 'Acceptée' WHERE id_etudiant = id_candidat;
+END;
+$$ LANGUAGE plpgsql;
+
 
 --Entreprise .7
-
+CREATE OR REPLACE FUNCTION projet.annuler_stage(_code_stage VARCHAR(3)) RETURNS INTEGER AS $$
+DECLARE
+BEGIN
+    UPDATE projet.offres_stage SET etat = 'Annulée' WHERE code_offre_stage = _code_stage;
+END;
+$$ LANGUAGE plpgsql;
 
 
 --ETUDIANT
@@ -148,6 +174,14 @@ $$ LANGUAGE plpgsql;
 --Etudiant .2
 
 --Etudiant .3
+CREATE OR REPLACE FUNCTION projet.poser_candidature(_id_etudiant INTEGER, _motivation VARCHAR(1000),
+        _code_offre_stage VARCHAR(4) ) RETURNS INTEGER AS $$
+DECLARE
+BEGIN
+
+END;
+$$ LANGUAGE plpgsql;
+
 
 --Etudiant .4
 
@@ -219,3 +253,71 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER vérification_insert_offre_stage AFTER INSERT ON projet.offres_stage
 	FOR EACH ROW EXECUTE PROCEDURE projet.vérification_insert_offre_stage();
 
+
+CREATE OR REPLACE FUNCTION projet.vérification_insert_stage_mot_cle() RETURNS TRIGGER AS $$
+DECLARE
+    etat_stage VARCHAR(50);
+    nombre_mot_cle INTEGER;
+BEGIN
+    SELECT os.etat FROM projet.offres_stage os WHERE NEW.code_offre_stage = os.code_offre_stage INTO etat_stage;
+    IF ( etat_stage = 'Attribuée' OR etat_stage = 'Annulée' )
+        THEN RAISE 'offre de stage indisponible';
+    END IF;
+
+    SELECT COUNT(mcs.code_mot_cle) FROM projet.mots_cle_stage mcs
+                                   WHERE mcs.code_offre_stage = NEW.code_offre_stage INTO nombre_mot_cle;
+
+    IF(nombre_mot_cle >= 4)
+        THEN RAISE 'nombre de mot cles atteints';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER vérification_insert_offre_stage AFTER INSERT ON projet.mots_cle_stage
+	FOR EACH ROW EXECUTE PROCEDURE projet.vérification_insert_stage_mot_cle();
+
+
+CREATE OR REPLACE FUNCTION projet.annulation_validation_stage() RETURNS TRIGGER AS $$
+DECLARE
+
+BEGIN
+    IF ((OLD.etat = 'Validée' AND NEW.etat = 'Annulée'))
+        THEN UPDATE projet.candidatures SET etat = 'Refusée' WHERE code_offre_stage = NEW.code_offre_stage;
+    END IF;
+
+    IF (OLD.etat = 'Validée' AND NEW.etat = 'Attribuée')
+        THEN
+
+        UPDATE projet.candidatures SET etat = 'Refusée'
+            WHERE code_offre_stage = NEW.code_offre_stage AND id_etudiant != NEW.id_etudiant;
+
+        UPDATE projet.candidatures SET etat = 'Annulée'
+            WHERE id_etudiant = NEW.id_etudiant AND code_offre_stage != NEW.code_offre_stage;
+
+        UPDATE projet.offres_stage SET etat = 'Annulée'
+            WHERE id_entreprise = NEW.id_entreprise AND code_offre_stage != NEW.code_offre_stage
+            AND semestre= NEW.semestre;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER annulation_validation_stage AFTER UPDATE ON projet.offres_stage
+	FOR EACH ROW EXECUTE PROCEDURE projet.annulation_validation_stage();
+
+
+CREATE OR REPLACE FUNCTION projet.vérification_poser_candidature() RETURNS TRIGGER AS $$
+DECLARE
+
+BEGIN
+    --Il ne peut poser de candidature s’il a déjà une candidature acceptée
+
+    --s’il a déjà posé sa candidature pour cette offre
+
+    --si l’offre n’est pas dans l’état validée
+
+    --si l’offre ne correspond pas au bon semestre
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER vérification_poser_candidature AFTER INSERT ON projet.candidatures
+	FOR EACH ROW EXECUTE PROCEDURE projet.vérification_poser_candidature();
