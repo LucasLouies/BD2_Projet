@@ -7,13 +7,13 @@ CREATE TABLE projet.etudiants(
 	semestre_du_stage VARCHAR(2) NOT NULL CHECK (semestre_du_stage SIMILAR TO 'Q[1-2]'),
 	mdp VARCHAR(100) NOT NULL CHECK (mdp <>''),
 	nb_candidature_en_attente INTEGER NOT NULL DEFAULT 0 CHECK ( nb_candidature_en_attente >=0 ),
-	mail VARCHAR(50) UNIQUE NOT NULL CHECK ( mail SIMILAR TO '[\w-\.]+@([\w-]+\.)+[\w-]{2,4}')
+	mail VARCHAR(50) UNIQUE NOT NULL CHECK ( mail SIMILAR TO '\w+\.\w+@student\.vinci\.be')
 );
 
 CREATE TABLE projet.entreprises(
-	id_entreprise VARCHAR(3) PRIMARY KEY CHECK ( id_entreprise SIMILAR TO '^[A-Z]{3}$'),
+	id_entreprise VARCHAR(3) PRIMARY KEY CHECK ( id_entreprise SIMILAR TO '[A-Z]{3}'),
 	mdp VARCHAR(100) NOT NULL,
-	mail VARCHAR(50) NOT NULL CHECK ( mail SIMILAR TO '\w+\.\w+@student\.vinci\.be'),
+	mail VARCHAR(50) NOT NULL CHECK ( mail SIMILAR TO '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'),
 	adresse VARCHAR(100) NOT NULL CHECK ( adresse <> '' ),
 	nom VARCHAR(100) NOT NULL CHECK ( nom <> '' )
 );
@@ -170,6 +170,30 @@ $$ LANGUAGE plpgsql;
 --connexion etudiant
 
 --Etudiant .1
+-- Création de la vue
+CREATE OR REPLACE VIEW projet.offres_validees AS
+SELECT
+    os.code_offre_stage,
+    e.nom AS nom_entreprise,
+    e.adresse AS adresse_entreprise,
+    os.description,
+    string_agg(mc.libelle, ', ') AS mots_cles
+FROM
+    projet.offres_stage os,
+    projet.entreprises e,
+    projet.mots_cle_stage mcs,
+    projet.mots_cle mc,
+    projet.etudiants et
+WHERE
+    os.id_entreprise = e.id_entreprise
+    AND os.code_offre_stage = mcs.code_offre_stage
+    AND mcs.code_mot_cle = mc.code_mot_cle
+    AND os.id_etudiant = et.id_etudiant
+    AND os.etat = 'Validée'
+    AND os.semestre = et.semestre_du_stage
+GROUP BY
+    os.code_offre_stage, e.nom, e.adresse, os.description;
+
 
 --Etudiant .2
 
