@@ -277,25 +277,14 @@ $$
 DECLARE
 
 BEGIN
-    IF (old.etat = 'Non Validée' AND new.etat = 'Attribuée')
+ IF (OLD.etat = 'Non Validée' AND NEW.etat = 'Attribuée') OR
+       (OLD.etat = 'Validée' AND NEW.etat = 'Non Validée') OR
+       (OLD.etat = 'Attribuée' AND NEW.etat != 'Attribuée') OR
+       (OLD.etat = 'Annulée' AND NEW.etat != 'Annulée')
     THEN
-        RAISE 'changement d etat non valide';
+        RAISE 'Changement d''état non valide';
     END IF;
-
-    IF (old.etat = 'Validée' AND new.etat = 'Non Validée')
-    THEN
-        RAISE 'changement d etat non valide';
-    END IF;
-
-    IF (old.etat = 'Attribuée' AND new.etat != 'Attribuée')
-    THEN
-        RAISE 'changement d etat non valide';
-    END IF;
-
-    IF (old.etat = 'Annulée' AND new.etat != 'Annulée')
-    THEN
-        RAISE 'changement d etat non valide';
-    END IF;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -348,7 +337,7 @@ BEGIN
         RAISE 'offre de stage déjà attribuée lors de ce semestre';
 
     END IF;
-
+     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -380,6 +369,7 @@ BEGIN
     THEN
         RAISE 'nombre de mot cles atteints';
     END IF;
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -419,6 +409,7 @@ BEGIN
           AND code_offre_stage != NEW.code_offre_stage
           AND semestre = NEW.semestre;
     END IF;
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -434,6 +425,7 @@ $$
 DECLARE
 
 BEGIN
+    --todo
     --Il ne peut poser de candidature s’il a déjà une candidature acceptée
 
     --s’il a déjà posé sa candidature pour cette offre
@@ -441,6 +433,7 @@ BEGIN
     --si l’offre n’est pas dans l’état validée
 
     --si l’offre ne correspond pas au bon semestre
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
