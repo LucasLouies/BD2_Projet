@@ -46,6 +46,7 @@ FROM projet.rechercher_offres_par_mot_cle(1,'SQL');
 SELECT *
 FROM projet.rechercher_offres_par_mot_cle(1,'Web');
 
-
+select *
+from projet.voir_offres_stage;
 
 

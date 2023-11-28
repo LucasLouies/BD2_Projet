@@ -182,6 +182,19 @@ END;
 $$ LANGUAGE plpgsql;
 --Entreprise .4
 --todo
+CREATE OR REPLACE VIEW projet.voir_offres_stage AS
+SELECT
+    os.code_offre_stage,
+    os.description,
+    os.semestre,
+    os.etat,
+    (SELECT COUNT(*) FROM projet.candidatures c WHERE c.code_offre_stage = os.code_offre_stage AND c.etat = 'En attente') AS nb_candidature_en_attente,
+    COALESCE(e.nom, 'pas attribuée') AS nom_etudiant_attribue
+FROM
+    projet.offres_stage os
+LEFT JOIN
+    projet.etudiants e ON os.id_etudiant = e.id_etudiant;
+
 
 --Entreprise .5
 --todo
