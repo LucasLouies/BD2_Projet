@@ -181,7 +181,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 --Entreprise .4
---todo
+/*YA
+Voir ses offres de stages : Pour chaque offre de stage, on affichera son code, sa
+description, son semestre, son état, le nombre de candidatures en attente et le nom
+de l’étudiant qui fera le stage (si l’offre a déjà été attribuée). Si l'offre de stage n'a pas
+encore été attribuée, il sera indiqué "pas attribuée" à la place du nom de l'étudiant.
+  */
 CREATE OR REPLACE VIEW projet.voir_offres_stage AS
 SELECT
     os.code_offre_stage,
