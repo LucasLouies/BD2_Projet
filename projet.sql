@@ -54,20 +54,30 @@ CREATE TABLE projet.mots_cle_stage
     PRIMARY KEY (code_mot_cle, code_offre_stage)
 );
 
+--Permissions____________________________________________________________________________________________________________________________
+CREATE ROLE Collegue;
+GRANT SELECT ON projet.* TO Collegue;
+GRANT INSERT ON projet.* TO Collegue;
+GRANT UPDATE ON projet.* TO Collegue;
+GRANT DELETE ON projet.* TO Collegue;
+--GRANT EXECUTE ON all procedures in schema TO Collegue;
+
+GRANT Collegue TO lucaslouies;
+GRANT Collegue TO mohamednori;
+GRANT Collegue TO youssefabouhamid;
+
 
 --PROFFESSEUR____________________________________________________________________________________________________________________________
 
 --Prof .1
 CREATE OR REPLACE FUNCTION projet.encoder_etudiant(_nom VARCHAR(100), _prenom VARCHAR(100), _mail VARCHAR(50),
-                                                   _semestre VARCHAR(2), _mdp VARCHAR(100)) RETURNS INTEGER AS
+                                                   _semestre VARCHAR(2), _mdp VARCHAR(100)) RETURNS VOID AS
 $$
 DECLARE
     id INTEGER := 0;
 BEGIN
     INSERT INTO projet.etudiants
-    VALUES (DEFAULT, _nom, _prenom, _semestre, _mdp, DEFAULT, _mail)
-    RETURNING id_etudiant INTO id;
-    RETURN id;
+    VALUES (DEFAULT, _nom, _prenom, _semestre, _mdp, DEFAULT, _mail);
 END;
 $$ LANGUAGE plpgsql;
 
