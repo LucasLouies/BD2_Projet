@@ -188,21 +188,62 @@ de l’étudiant qui fera le stage (si l’offre a déjà été attribuée). Si 
 encore été attribuée, il sera indiqué "pas attribuée" à la place du nom de l'étudiant.
   */
 CREATE OR REPLACE VIEW projet.voir_offres_stage AS
-SELECT
-    os.code_offre_stage,
-    os.description,
-    os.semestre,
-    os.etat,
-    (SELECT COUNT(*) FROM projet.candidatures c WHERE c.code_offre_stage = os.code_offre_stage AND c.etat = 'En attente') AS nb_candidature_en_attente,
-    COALESCE(e.nom, 'pas attribuée') AS nom_etudiant_attribue
-FROM
-    projet.offres_stage os
-LEFT JOIN
-    projet.etudiants e ON os.id_etudiant = e.id_etudiant;
+SELECT os.code_offre_stage,
+       os.description,
+       os.semestre,
+       os.etat,
+       (SELECT COUNT(*)
+        FROM projet.candidatures c
+        WHERE c.code_offre_stage = os.code_offre_stage AND c.etat = 'En attente') AS nb_candidature_en_attente,
+       COALESCE(e.nom, 'pas attribuée')                                           AS nom_etudiant_attribue
+FROM projet.offres_stage os
+         LEFT JOIN
+     projet.etudiants e ON os.id_etudiant = e.id_etudiant;
 
 
 --Entreprise .5
---todo
+/*YA
+  Voir les candidatures pour une de ses offres de stages en donnant son code. Pour
+chaque candidature, on affichera son état, le nom, prénom, adresse mail et les
+motivations de l’étudiant. Si le code ne correspond pas à une offre de l’entreprise ou
+qu’il n’y a pas de candidature pour cette offre, le message suivant sera affiché “Il n'y a
+pas de candidatures pour cette offre ou vous n'avez pas d'offre ayant ce code”.
+  */
+CREATE OR REPLACE FUNCTION projet.voir_candidatures_par_entreprise(_id_entreprise VARCHAR(3))
+    RETURNS TABLE
+            (
+                code_offre_stage VARCHAR(5),
+                etat             VARCHAR(50),
+                nom_etudiant     VARCHAR(100),
+                prenom_etudiant  VARCHAR(100),
+                mail_etudiant    VARCHAR(50),
+                motivation       VARCHAR(1000)
+            )
+AS
+$$
+DECLARE
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM projet.offres_stage WHERE id_entreprise = _id_entreprise) THEN
+        RAISE EXCEPTION 'Il n''y a pas d''offre pour cette entreprise';
+    END IF;
+    RETURN QUERY
+        SELECT c.code_offre_stage,
+               c.etat,
+               e.nom,
+               e.prenom,
+               e.mail,
+               c.motivation
+        FROM projet.candidatures c
+                 JOIN
+             projet.etudiants e ON c.id_etudiant = e.id_etudiant
+                 JOIN
+             projet.offres_stage os ON c.code_offre_stage = os.code_offre_stage
+        WHERE os.id_entreprise = _id_entreprise;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 --Entreprise .6
 CREATE OR REPLACE FUNCTION projet.selectionner_etudiant(_code_stage VARCHAR(3), _mail_etudiant VARCHAR(100)) RETURNS INTEGER AS
@@ -255,8 +296,8 @@ DECLARE
 BEGIN
     RETURN QUERY
         SELECT os.code_offre_stage,
-               e.nom                        AS nom_entreprise,
-               e.adresse                    AS adresse_entreprise,
+               e.nom                                 AS nom_entreprise,
+               e.adresse                             AS adresse_entreprise,
                os.description,
                STRING_AGG(mc.libelle, ', ')::VARCHAR AS mots_cles
         FROM projet.offres_stage os
@@ -295,7 +336,6 @@ AS
 $$
 DECLARE
 BEGIN
-    -- Appelle la procédure existante pour obtenir les offres de stage valides
     RETURN QUERY
         SELECT *
         FROM projet.get_offres_stage_valides(etudiant_id) AS result

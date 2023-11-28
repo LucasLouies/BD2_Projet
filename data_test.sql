@@ -49,4 +49,8 @@ FROM projet.rechercher_offres_par_mot_cle(1,'Web');
 select *
 from projet.voir_offres_stage;
 
+SELECT * FROM projet.voir_candidatures_par_entreprise('ABC');
+SELECT * FROM projet.voir_candidatures_par_entreprise('XYZ');
+
+
 
