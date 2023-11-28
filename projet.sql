@@ -153,7 +153,7 @@ DECLARE
     _code_offre_stage   VARCHAR(5);
     _numero_offre_stage VARCHAR(2);
 BEGIN
-    SELECT COUNT(os.code_offre_stage) +1
+    SELECT COUNT(os.code_offre_stage) + 1
     FROM projet.offres_stage os
     WHERE os.id_entreprise = _code_entreprise
     INTO _numero_offre_stage;
@@ -170,13 +170,13 @@ SELECT mc.libelle
 FROM projet.mots_cle mc;
 
 --Entreprise .3
-CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_stage VARCHAR(3), _id_mot_cle INTEGER) RETURNS VARCHAR(9) AS
+CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_offre_stage VARCHAR(3), _id_mot_cle INTEGER) RETURNS VARCHAR(9) AS
 $$
 DECLARE
-    concatenated_value VARCHAR(8):= '';
+    concatenated_value VARCHAR(8) := '';
 BEGIN
-    concatenated_value := _id_mot_cle || '_' || _code_stage;
-    INSERT INTO projet.mots_cle_stage(code_mot_cle, code_offre_stage) VALUES (_id_mot_cle, _code_stage);
+    concatenated_value := _id_mot_cle || '_' || _code_offre_stage;
+    INSERT INTO projet.mots_cle_stage(code_mot_cle, code_offre_stage) VALUES (_id_mot_cle, _code_offre_stage);
     RETURN concatenated_value;
 END;
 $$ LANGUAGE plpgsql;
@@ -222,28 +222,71 @@ l’étudiant fera son stage. Pour une offre de stage, on affichera son code, le
 l’entreprise, son adresse, sa description et les mots-clés (séparés par des virgules sur
 une même ligne).
   */
-CREATE OR REPLACE VIEW projet.offres_validees AS
-SELECT os.code_offre_stage,
-       e.nom                        AS nom_entreprise,
-       e.adresse                    AS adresse_entreprise,
-       os.description,
-       string_agg(mc.libelle, ', ') AS mots_cles
-FROM projet.offres_stage os,
-     projet.entreprises e,
-     projet.mots_cle_stage mcs,
-     projet.mots_cle mc,
-     projet.etudiants et
-WHERE os.id_entreprise = e.id_entreprise
-  AND os.code_offre_stage = mcs.code_offre_stage
-  AND mcs.code_mot_cle = mc.code_mot_cle
-  AND os.id_etudiant = et.id_etudiant
-  AND os.etat = 'Validée'
-  AND os.semestre = et.semestre_du_stage
-GROUP BY os.code_offre_stage, e.nom, e.adresse, os.description;
+CREATE OR REPLACE FUNCTION projet.get_offres_stage_valides(IN etudiant_id INTEGER)
+    RETURNS TABLE
+            (
+                code_offre_stage   VARCHAR(5),
+                nom_entreprise     VARCHAR(100),
+                adresse_entreprise VARCHAR(100),
+                description        VARCHAR(50),
+                mots_cles          VARCHAR
+            )
+AS
+$$
+DECLARE
+BEGIN
+    RETURN QUERY
+        SELECT os.code_offre_stage,
+               e.nom                        AS nom_entreprise,
+               e.adresse                    AS adresse_entreprise,
+               os.description,
+               STRING_AGG(mc.libelle, ', ')::VARCHAR AS mots_cles
+        FROM projet.offres_stage os
+                 JOIN
+             projet.entreprises e ON os.id_entreprise = e.id_entreprise
+                 LEFT JOIN
+             projet.mots_cle_stage mcs ON os.code_offre_stage = mcs.code_offre_stage
+                 LEFT JOIN
+             projet.mots_cle mc ON mcs.code_mot_cle = mc.code_mot_cle
+        WHERE os.etat = 'Validée'
+          AND os.semestre = (SELECT semestre_du_stage FROM projet.etudiants WHERE id_etudiant = etudiant_id)
+        GROUP BY os.code_offre_stage, e.nom, e.adresse, os.description;
+
+END;
+$$ LANGUAGE plpgsql;
+
 
 
 --Etudiant .2
+/*YA
+  Recherche d’une offre de stage par mot clé. Cette recherche n’affichera que les offres de stages validées
+  et correspondant au semestre où l’étudiant fera son stage.
+  Les offres de stage seront affichées comme au point précédent.
+*/
 --todo
+CREATE OR REPLACE FUNCTION projet.rechercher_offres_par_mot_cle(etudiant_id INTEGER, _mot_cle VARCHAR(50))
+    RETURNS TABLE
+            (
+                code_offre_stage   VARCHAR(5),
+                nom_entreprise     VARCHAR(100),
+                adresse_entreprise VARCHAR(100),
+                description        VARCHAR(50),
+                mots_cles          VARCHAR
+            )
+AS
+$$
+DECLARE
+BEGIN
+    -- Appelle la procédure existante pour obtenir les offres de stage valides
+    RETURN QUERY
+        SELECT *
+        FROM projet.get_offres_stage_valides(etudiant_id) AS result
+        WHERE result.mots_cles ILIKE '%' || _mot_cle || '%'; -- Filtrer par mot clé
+
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 --Etudiant .3
 /*YA
@@ -494,7 +537,8 @@ BEGIN
     INTO semestre_correspondant
     FROM projet.etudiants e
     WHERE e.id_etudiant = NEW.id_etudiant
-      AND e.semestre_du_stage = (SELECT semestre FROM projet.offres_stage WHERE code_offre_stage = NEW.code_offre_stage);
+      AND e.semestre_du_stage =
+          (SELECT semestre FROM projet.offres_stage WHERE code_offre_stage = NEW.code_offre_stage);
 
     IF semestre_correspondant = 0 THEN
         RAISE 'Cette offre de stage ne correspond pas à votre semestre.';
