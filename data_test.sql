@@ -30,13 +30,11 @@ SELECT projet.valider_offre_stage('XYZ2');
 -- Exemple : Les étudiants posent des candidatures pour des offres de stage avec le même semestre
 SELECT projet.poser_candidature(1, 'Motivation pour ABC1', 'ABC1');
 SELECT projet.poser_candidature(1, 'Motivation pour XYZ1', 'XYZ1');
+SELECT projet.poser_candidature(3, 'Motivation pour XYZ1', 'XYZ1');
 
 select projet.ajouter_mot_cle('ABC1', 1);
 select projet.ajouter_mot_cle('ABC1', 2);
-
-SELECT *
-FROM projet.get_offres_stage_valides(1);
-
+/*
 SELECT * FROM projet.get_offres_stage_valides(1);
 
 SELECT *
@@ -50,7 +48,8 @@ select *
 from projet.voir_offres_stage;
 
 SELECT * FROM projet.voir_candidatures_par_entreprise('ABC');
-SELECT * FROM projet.voir_candidatures_par_entreprise('XYZ');
+SELECT * FROM projet.voir_candidatures_par_entreprise('XYZ');*/
 
+SELECT projet.annuler_candidature('ABC1');
 
 
