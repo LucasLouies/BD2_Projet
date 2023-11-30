@@ -3,10 +3,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class ProgrammeProffesseur{
+public class ProgrammeProfesseur{
 
     boolean fini = false;
-    public ProgrammeProffesseur() {
+    public ProgrammeProfesseur() {
         String url="jdbc:postgresql://172.24.2.6:5432/dblucaslouies";
         Connection conn=null;
         try {

@@ -14,7 +14,7 @@ public class ProgrammePrincipal {
 
         switch (reponseLogin[0]){
             case "1" :
-                ProgrammeProffesseur programmeProffesseur = new ProgrammeProffesseur();
+                ProgrammeProfesseur programmeProfesseur = new ProgrammeProfesseur();
                 break;
             case "2" :
                 ProgrammeEntreprise programmeEntreprise = new ProgrammeEntreprise();

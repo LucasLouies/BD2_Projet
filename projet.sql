@@ -194,6 +194,7 @@ BEGIN
     RETURN concatenated_value;
 END;
 $$ LANGUAGE plpgsql;
+
 --Entreprise .4
 /*YA
 Voir ses offres de stages : Pour chaque offre de stage, on affichera son code, sa
