@@ -182,12 +182,14 @@ SELECT mc.libelle
 FROM projet.mots_cle mc;
 
 --Entreprise .3
-CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_offre_stage VARCHAR(3), _id_mot_cle INTEGER) RETURNS VARCHAR(9) AS
+CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_offre_stage VARCHAR(3), _libelle_mot_cle INTEGER) RETURNS VARCHAR(9) AS
 $$
 DECLARE
     concatenated_value VARCHAR(8) := '';
+    code_mot_cle INTEGER;
 BEGIN
     concatenated_value := _id_mot_cle || '_' || _code_offre_stage;
+    SELECT mc.code_mot_cle FROM projet.mots_cle mc WHERE mc.libelle = _libelle_mot_cle INTO code_mot_cle
     INSERT INTO projet.mots_cle_stage(code_mot_cle, code_offre_stage) VALUES (_id_mot_cle, _code_offre_stage);
     RETURN concatenated_value;
 END;
@@ -294,7 +296,7 @@ l’étudiant fera son stage. Pour une offre de stage, on affichera son code, le
 l’entreprise, son adresse, sa description et les mots-clés (séparés par des virgules sur
 une même ligne).
   */
-CREATE OR REPLACE FUNCTION projet.get_offres_stage_valides(IN etudiant_id INTEGER)
+CREATE OR REPLACE FUNCTION projet.get_offres_stage_valides(etudiant_id INTEGER)
     RETURNS TABLE
             (
                 code_offre_stage   VARCHAR(5),

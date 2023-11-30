@@ -18,6 +18,13 @@ public class ProgrammeEntreprise{
 
         while (!fini){
             System.out.println("Voici la section entreprise !");
+            String[] questionIdentificationEntreprise = {
+                "Quelle est votre identifiant ?",
+                "Quelle est votre mot de passe"
+            };
+            String[] identifiantsEntreprise = main.askForInput(questionIdentificationEntreprise);
+
+
             String[] questionChoixEntreprise =  {
                     "Encoder une offre de stage(1)\n" +
                             "Voir les mots clés(2)\n" +
@@ -33,21 +40,51 @@ public class ProgrammeEntreprise{
 
             switch (reponseChoixEntreprise[0]){
                 case "1":
+                    String[] questionEncoderStage = {
+                        "Veuillez entrer la description de l'offre de stage",
+                        "Veuillez entre le semestre du stage"
+                    };
+
+                    String[] reponseEncoderStage = main.askForInput(questionEncoderStage);
                     break;
                 case "2":
+                    
                     break;
                 case "3":
+                    String[] questionAjouterMotCle = {
+                        "Veuillez entrer le code du stage",
+                        "Veuillez enter le mot cle"
+                    };
+
+                    String[] reponseAjouterMotCle = main.askForInput(questionAjouterMotCle);
                     break;
                 case "4":
                     break;
                 case "5":
                     break;
                 case "6":
+                    String[] questionSelectionnerEtudiant = {
+                        "Veuillez entrer le code de l'offre",
+                        "Veuillez entrer l'adresse email de l'étudiant"
+                    };
+
+                    String[] reponseSelectionnerEtudiant = main.askForInput(questionSelectionnerEtudiant);
                     break;
                 case "7":
+                    String[] questionAnnulerStage = {
+                        "Veuillez entrer le code du stage à annuler"
+                    };
+
+                    String[] reponseAnnulerStage = main.askForInput(questionAnnulerStage);
                     break;
                 case "8":
                     fini = true;
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        System.out.println("echec de la fermeture de la connexion");
+                    }
+                    
                     break;
             }
         }

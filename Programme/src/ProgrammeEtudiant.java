@@ -39,6 +39,11 @@ public class ProgrammeEtudiant{
                 case "5" :
                     break;
                 case "6" :
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        System.out.println("echec de la fermeture de la connexion");
+                    }
                     fini = true;
                     break;
             }

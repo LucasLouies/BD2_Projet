@@ -73,6 +73,11 @@ public class ProgrammeProffesseur{
                 case "8":
                     break;
                 case "9":
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        System.out.println("echec de la fermeture de la connexion");
+                    }
                     fini = true;
                     break;
             }
