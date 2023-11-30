@@ -186,11 +186,11 @@ CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_offre_stage VARCHAR(3), 
 $$
 DECLARE
     concatenated_value VARCHAR(8) := '';
-    code_mot_cle INTEGER;
+    temp_code_mot_cle INTEGER;
 BEGIN
     concatenated_value := _id_mot_cle || '_' || _code_offre_stage;
-    SELECT mc.code_mot_cle FROM projet.mots_cle mc WHERE mc.libelle = _libelle_mot_cle INTO code_mot_cle
-    INSERT INTO projet.mots_cle_stage(code_mot_cle, code_offre_stage) VALUES (_id_mot_cle, _code_offre_stage);
+    SELECT mc.code_mot_cle FROM projet.mots_cle mc WHERE mc.libelle = _libelle_mot_cle INTO temp_code_mot_cle;
+    INSERT INTO projet.mots_cle_stage(code_mot_cle, code_offre_stage) VALUES (temp_code_mot_cle, _code_offre_stage);
     RETURN concatenated_value;
 END;
 $$ LANGUAGE plpgsql;
