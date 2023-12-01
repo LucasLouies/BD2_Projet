@@ -48,7 +48,7 @@ public class ProgrammeProfesseur{
                             i++;
                         }
                         if(ps.execute()){
-                            System.out.println("OK");
+                            System.out.println("Insertion de l'étudiant réussie");
                         }
 
 
@@ -59,18 +59,94 @@ public class ProgrammeProfesseur{
 
                     break;
                 case "2":
+                    String[] questionInsertionEntreprise = {
+                        "Veuillez entrer l'identifiant de l'entreprise",
+                        "Quel est le nom de l'entreprise ?",
+                        "Veuillez entrer le mot de passe de l'entreprise",
+                        "Quelle est l'adresse mail de l'entreprise ?",
+                        "Quelle est l'adresse de l'entreprise ?"
+                    };
+
+                    String[] reponseInsertionEntreprise = main.askForInput(questionInsertionEntreprise);
+
+                    try {
+                        PreparedStatement ps = conn.prepareStatement("SELECT projet.encoder_entreprise(?,?,?,?,?);");
+                        int i = 0;
+                        for (String reponse : reponseInsertionEntreprise){
+                            ps.setString(i+1, reponseInsertionEntreprise[i]);
+                            i++;
+                        }
+                        if(ps.execute()){
+                            System.out.println("Insertion de l'entreprise réussie");
+                        }
+                    } catch (SQLException e) {
+                        System.out.println("Erreur lors de l'insertion d'une entreprise");
+                        e.printStackTrace();
+                    }
                     break;
                 case "3":
+                    String[] questionInsertionMotCle = {"Quelle est le mot clé à insérer ?"};
+                    String[] reponseInsertionMotCle = main.askForInput(questionInsertionMotCle);
+
+                    try {
+                        PreparedStatement ps = conn.prepareStatement("SELECT projet.encoder_mot_cle(?);");
+                        ps.setString(1, reponseInsertionMotCle[0]);
+
+                        if(ps.execute()){
+                            System.out.println("Insertion du mot clé réussie");
+                        }
+                    } catch (SQLException e) {
+                        System.out.println("Erreur lors de l'insertion d'un mot clé");
+                        e.printStackTrace();
+                    }
                     break;
                 case "4":
+                    try {
+                        PreparedStatement ps = conn.prepareStatement("SELECT projet.voir_offre_non_valide;");
+                        main.displayData(ps.executeQuery());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case "5":
+                    String[] questionValideOffre = {"Veuillez entrer le code de l'offre a valide"};
+                    String[] reponseValideOffre = main.askForInput(questionValideOffre);
+                    try {
+                        PreparedStatement ps = conn.prepareStatement("SELECT projet.valider_offre_stage(?);");
+                        ps.setString(1, reponseValideOffre[0]);
+                        
+                        if(ps.execute()) {
+                            System.out.println("Validation de l'offre réussie");
+                        }
+                    } catch (SQLException e) {
+                        System.out.println("Erreur lors de la validation de l'offre de stage");
+                        e.printStackTrace();
+                    }
+                    
                     break;
                 case "6":
+                    try {
+                        PreparedStatement ps = conn.prepareStatement("SELECT projet.voir_offre_stage_valide;");
+                        main.displayData(ps.executeQuery());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case "7":
+                    try {
+                        PreparedStatement ps = conn.prepareStatement("SELECT projet.voir_etudiants_sans_stage;");
+                        main.displayData(ps.executeQuery());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case "8":
+                    try {
+                        PreparedStatement ps = conn.prepareStatement("SELECT projet.voir_offre_stage_attribues;");
+                        main.displayData(ps.executeQuery());
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case "9":
                     try {
