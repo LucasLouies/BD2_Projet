@@ -225,6 +225,8 @@ motivations de l’étudiant. Si le code ne correspond pas à une offre de l’e
 qu’il n’y a pas de candidature pour cette offre, le message suivant sera affiché “Il n'y a
 pas de candidatures pour cette offre ou vous n'avez pas d'offre ayant ce code”.
   */
+
+--to do faire ça en view (je crois)
 CREATE OR REPLACE FUNCTION projet.voir_candidatures_par_entreprise(_id_entreprise VARCHAR(3))
     RETURNS TABLE
             (

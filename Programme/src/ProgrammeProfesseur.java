@@ -44,7 +44,7 @@ public class ProgrammeProfesseur{
                         PreparedStatement ps = conn.prepareStatement("SELECT projet.encoder_etudiant(?,?,?,?,?);");
                         int i = 0;
                         for (String reponse : reponseInsertionEtudiant){
-                            ps.setString(i+1, reponseInsertionEtudiant[i]);
+                            ps.setString(i+1, reponse);
                             i++;
                         }
                         if(ps.execute()){
@@ -73,7 +73,7 @@ public class ProgrammeProfesseur{
                         PreparedStatement ps = conn.prepareStatement("SELECT projet.encoder_entreprise(?,?,?,?,?);");
                         int i = 0;
                         for (String reponse : reponseInsertionEntreprise){
-                            ps.setString(i+1, reponseInsertionEntreprise[i]);
+                            ps.setString(i+1, reponse);
                             i++;
                         }
                         if(ps.execute()){
@@ -102,7 +102,7 @@ public class ProgrammeProfesseur{
                     break;
                 case "4":
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT projet.voir_offre_non_valide;");
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_offre_non_valide;");
                         main.displayData(ps.executeQuery());
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -126,7 +126,7 @@ public class ProgrammeProfesseur{
                     break;
                 case "6":
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT projet.voir_offre_stage_valide;");
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_offre_stage_valide;");
                         main.displayData(ps.executeQuery());
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -134,7 +134,7 @@ public class ProgrammeProfesseur{
                     break;
                 case "7":
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT projet.voir_etudiants_sans_stage;");
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_etudiants_sans_stage;");
                         main.displayData(ps.executeQuery());
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -142,7 +142,7 @@ public class ProgrammeProfesseur{
                     break;
                 case "8":
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT projet.voir_offre_stage_attribues;");
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_offre_stage_attribues;");
                         main.displayData(ps.executeQuery());
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -159,5 +159,4 @@ public class ProgrammeProfesseur{
             }
         }
     }
-
 }
