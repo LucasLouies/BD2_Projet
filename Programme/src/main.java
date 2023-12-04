@@ -26,18 +26,18 @@ public class main {
         return answers;
     }
 
-    //a verifier
     public static void displayData(ResultSet rs){
         try {
             ResultSetMetaData metaData = rs.getMetaData();
 
             while (rs.next()) {
-                for(int i = 0; i > metaData.getColumnCount(); i++ ){
-                    System.out.println(metaData.getColumnName(i) + " : " + rs.getString(i) + "\n");
+                for(int i = 1; i <= metaData.getColumnCount(); i++ ){
+                    System.out.println(metaData.getColumnName(i) + " : " + rs.getString(i));
                 }
-                System.out.println("\n\n");
+                System.out.println("\n");
             }
-            
+
+            System.out.println("\n");
         } catch (SQLException e) {
             System.out.println("Erreur lors de l'affichage");
             e.printStackTrace();

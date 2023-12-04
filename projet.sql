@@ -55,16 +55,12 @@ CREATE TABLE projet.mots_cle_stage
 );
 
 --Permissions____________________________________________________________________________________________________________________________
-CREATE ROLE Collegue;
-GRANT SELECT ON projet.* TO Collegue;
-GRANT INSERT ON projet.* TO Collegue;
-GRANT UPDATE ON projet.* TO Collegue;
-GRANT DELETE ON projet.* TO Collegue;
---GRANT EXECUTE ON all procedures in schema TO Collegue;
+--Entreprise
+GRANT INSERT, SELECT, UPDATE ON projet.offres_stage TO mohamednori;
+GRANT SELECT ON projet.mots_cle TO mohamednori;
 
-GRANT Collegue TO lucaslouies;
-GRANT Collegue TO mohamednori;
-GRANT Collegue TO youssefabouhamid;
+--Etudiant
+GRANT INSERT, SELECT, UPDATE on projet.candidatures TO youssefabouhamid;
 
 
 --PROFFESSEUR____________________________________________________________________________________________________________________________
@@ -139,8 +135,8 @@ CREATE VIEW projet.voir_etudiants_sans_stages AS
 SELECT e.nom, e.prenom, e.mail, e.semestre_du_stage, e.nb_candidature_en_attente
 FROM projet.etudiants e,
      projet.candidatures c
-WHERE e.id_etudiant = c.id_etudiant
-  AND c.etat != 'Acceptée';
+WHERE (e.id_etudiant = c.id_etudiant AND c.etat != 'Acceptée')
+    OR e.id_etudiant != c.id_etudiant;
 
 --Prof .8
 CREATE VIEW projet.voir_offres_stage_attribues AS
@@ -182,14 +178,14 @@ SELECT mc.libelle
 FROM projet.mots_cle mc;
 
 --Entreprise .3
-CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_offre_stage VARCHAR(3), _libelle_mot_cle INTEGER) RETURNS VARCHAR(9) AS
+CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_offre_stage VARCHAR(3), _libelle_mot_cle VARCHAR(50)) RETURNS VARCHAR(9) AS
 $$
 DECLARE
-    concatenated_value VARCHAR(8) := '';
+    concatenated_value VARCHAR(50) := '';
     temp_code_mot_cle INTEGER;
 BEGIN
-    concatenated_value := _id_mot_cle || '_' || _code_offre_stage;
     SELECT mc.code_mot_cle FROM projet.mots_cle mc WHERE mc.libelle = _libelle_mot_cle INTO temp_code_mot_cle;
+    concatenated_value := _libelle_mot_cle || '_' || _code_offre_stage;
     INSERT INTO projet.mots_cle_stage(code_mot_cle, code_offre_stage) VALUES (temp_code_mot_cle, _code_offre_stage);
     RETURN concatenated_value;
 END;
@@ -203,7 +199,9 @@ de l’étudiant qui fera le stage (si l’offre a déjà été attribuée). Si 
 encore été attribuée, il sera indiqué "pas attribuée" à la place du nom de l'étudiant.
   */
 CREATE OR REPLACE VIEW projet.voir_offres_stage AS
-SELECT os.code_offre_stage,
+SELECT
+       os.id_entreprise,
+       os.code_offre_stage,
        os.description,
        os.semestre,
        os.etat,
@@ -226,7 +224,6 @@ qu’il n’y a pas de candidature pour cette offre, le message suivant sera aff
 pas de candidatures pour cette offre ou vous n'avez pas d'offre ayant ce code”.
   */
 
---to do faire ça en view (je crois)
 CREATE OR REPLACE FUNCTION projet.voir_candidatures_par_entreprise(_id_entreprise VARCHAR(3))
     RETURNS TABLE
             (
@@ -274,12 +271,13 @@ BEGIN
 
     SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO id_candidat;
     UPDATE projet.candidatures SET etat = 'Acceptée' WHERE id_etudiant = id_candidat;
+    RETURN id_candidat;
 END;
 $$ LANGUAGE plpgsql;
 
 
 --Entreprise .7
-CREATE OR REPLACE FUNCTION projet.annuler_stage(_code_stage VARCHAR(3)) RETURNS INTEGER AS
+CREATE OR REPLACE FUNCTION projet.annuler_stage(_code_stage VARCHAR(3)) RETURNS VOID AS
 $$
 DECLARE
 BEGIN
@@ -299,7 +297,7 @@ l’étudiant fera son stage. Pour une offre de stage, on affichera son code, le
 l’entreprise, son adresse, sa description et les mots-clés (séparés par des virgules sur
 une même ligne).
   */
-CREATE OR REPLACE FUNCTION projet.get_offres_stage_valides(etudiant_id INTEGER)
+CREATE OR REPLACE FUNCTION projet.get_offres_stage_valides(_etudiant_mail VARCHAR(50))
     RETURNS TABLE
             (
                 code_offre_stage   VARCHAR(5),
@@ -311,7 +309,9 @@ CREATE OR REPLACE FUNCTION projet.get_offres_stage_valides(etudiant_id INTEGER)
 AS
 $$
 DECLARE
+    temp_id_etudiant INTEGER;
 BEGIN
+    SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _etudiant_mail INTO temp_id_etudiant;
     RETURN QUERY
         SELECT os.code_offre_stage,
                e.nom                                 AS nom_entreprise,
@@ -326,7 +326,7 @@ BEGIN
                  LEFT JOIN
              projet.mots_cle mc ON mcs.code_mot_cle = mc.code_mot_cle
         WHERE os.etat = 'Validée'
-          AND os.semestre = (SELECT semestre_du_stage FROM projet.etudiants WHERE id_etudiant = etudiant_id)
+          AND os.semestre = (SELECT semestre_du_stage FROM projet.etudiants WHERE id_etudiant = temp_id_etudiant)
         GROUP BY os.code_offre_stage, e.nom, e.adresse, os.description;
 
 END;
@@ -340,7 +340,7 @@ $$ LANGUAGE plpgsql;
   et correspondant au semestre où l’étudiant fera son stage.
   Les offres de stage seront affichées comme au point précédent.
 */
-CREATE OR REPLACE FUNCTION projet.rechercher_offres_par_mot_cle(etudiant_id INTEGER, _mot_cle VARCHAR(50))
+CREATE OR REPLACE FUNCTION projet.rechercher_offres_par_mot_cle(_etudiant_mail VARCHAR(50), _mot_cle VARCHAR(50))
     RETURNS TABLE
             (
                 code_offre_stage   VARCHAR(5),
@@ -352,10 +352,12 @@ CREATE OR REPLACE FUNCTION projet.rechercher_offres_par_mot_cle(etudiant_id INTE
 AS
 $$
 DECLARE
+    temp_etudiant_id INTEGER;
 BEGIN
+    SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _etudiant_mail INTO temp_etudiant_id;
     RETURN QUERY
         SELECT *
-        FROM projet.get_offres_stage_valides(etudiant_id) AS result
+        FROM projet.get_offres_stage_valides(_etudiant_mail) AS result
         WHERE result.mots_cles ILIKE '%' || _mot_cle || '%'; -- Filtrer par mot clé
 
 END;
@@ -370,12 +372,14 @@ $$ LANGUAGE plpgsql;
   s’il a déjà posé sa candidature pour cette offre,
   si l’offre n’est pas dans l’état validée ou si l’offre ne correspond pas au bon semestre.
   */
-CREATE OR REPLACE FUNCTION projet.poser_candidature(_id_etudiant INTEGER, _motivation VARCHAR(1000),
+CREATE OR REPLACE FUNCTION projet.poser_candidature(_mail_etudiant VARCHAR(50), _motivation VARCHAR(1000),
                                                     _code_offre_stage VARCHAR(5)) RETURNS INTEGER AS
 $$
 DECLARE
     _id_candidature INTEGER;
+    _id_etudiant INTEGER;
 BEGIN
+    SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO _id_etudiant;
     INSERT INTO projet.candidatures (etat, motivation, code_offre_stage, id_etudiant)
     VALUES ('En attente', _motivation, _code_offre_stage, _id_etudiant)
     RETURNING id_candidature INTO _id_candidature;
@@ -393,7 +397,7 @@ candidature.
 */
 
 CREATE VIEW projet.voirOffresCandidatureEtudiant AS
-SELECT os.code_offre_stage, en.nom, c.etat, os.id_etudiant
+SELECT os.code_offre_stage, en.nom, c.etat, os.id_etudiant, et.mail
 FROM projet.offres_stage os
          JOIN projet.candidatures c ON c.code_offre_stage = os.code_offre_stage
          JOIN projet.etudiants et ON c.id_etudiant = et.id_etudiant
@@ -406,11 +410,14 @@ FROM projet.offres_stage os
 peuvent être annulées que si elles sont « en attente ».
   */
 
-CREATE OR REPLACE FUNCTION projet.annuler_candidature(_code_offre_stage VARCHAR(5)) RETURNS VARCHAR(5) AS --fixme décrémenter nb candidature en attente
+CREATE OR REPLACE FUNCTION projet.annuler_candidature(_mail_etudiant VARCHAR(50) ,_code_offre_stage VARCHAR(5)) RETURNS VARCHAR(5) AS --fixme décrémenter nb candidature en attente
 $$
 DECLARE
+    _id_etudiant INTEGER;
 BEGIN
-    UPDATE projet.candidatures SET etat = 'Annulée' WHERE code_offre_stage = _code_offre_stage AND etat = 'En attente';
+    SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO _id_etudiant;
+    UPDATE projet.candidatures SET etat = 'Annulée' WHERE code_offre_stage = _code_offre_stage
+        AND etat = 'En attente' AND id_etudiant = _id_etudiant;
     RETURN _code_offre_stage;
 END;
 $$ LANGUAGE plpgsql;

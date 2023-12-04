@@ -28,12 +28,12 @@ SELECT projet.valider_offre_stage('XYZ2');
 
 -- Assurez-vous que les étudiants et les offres de stage ont le même semestre
 -- Exemple : Les étudiants posent des candidatures pour des offres de stage avec le même semestre
-SELECT projet.poser_candidature(1, 'Motivation pour ABC1', 'ABC1');
-SELECT projet.poser_candidature(1, 'Motivation pour XYZ1', 'XYZ1');
-SELECT projet.poser_candidature(3, 'Motivation pour XYZ1', 'XYZ1');
+SELECT projet.poser_candidature('jean.dupont@student.vinci.be', 'Motivation pour ABC1', 'ABC1');
+SELECT projet.poser_candidature('jean.dupont@student.vinci.be', 'Motivation pour XYZ1', 'XYZ1');
+SELECT projet.poser_candidature('pierre.lefevre@student.vinci.be', 'Motivation pour XYZ1', 'XYZ1');
 
-select projet.ajouter_mot_cle('ABC1', 1);
-select projet.ajouter_mot_cle('ABC1', 2);
+select projet.ajouter_mot_cle('ABC1', 'Java');
+select projet.ajouter_mot_cle('ABC1', 'SQL');
 /*
 SELECT * FROM projet.get_offres_stage_valides(1);
 
@@ -50,6 +50,4 @@ from projet.voir_offres_stage;
 SELECT * FROM projet.voir_candidatures_par_entreprise('ABC');
 SELECT * FROM projet.voir_candidatures_par_entreprise('XYZ');*/
 
-SELECT projet.annuler_candidature('ABC1');
-
-
+SELECT projet.annuler_candidature('jean.dupont@student.vinci.be', 'ABC1');

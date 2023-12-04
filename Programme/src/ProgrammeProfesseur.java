@@ -1,7 +1,4 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class ProgrammeProfesseur{
 
@@ -15,16 +12,15 @@ public class ProgrammeProfesseur{
             System.out.println("Impossible de joindre le server !");
             System.exit(1);
         }
-
+        System.out.println("Voici la section professeur !");
         while (!fini){
-            System.out.println("Voici la section professeur !");
             String[] questionChoixProf = {
                     "encoder un etudiant (1)\n" +
                             "encore une entreprise(2)\n" +
                             "encoder un mot-clé(3)\n" +
-                            "voir les offres de stage validées(4)\n" +
-                            "voir une offre de stage via son code(5)\n" +
-                            "voir les offres de stage non validées(6)\n" +
+                            "voir les offres de stage non validées(4)\n" +
+                            "valider une offre de stage via son code(5)\n"+
+                             "voir les offres de stage validées(6)\n" +
                             "voir les étudiants qui n'ont pas de stage(7)\n" +
                             "voir les offres de stage attribuées(8)\n" +
                             "quitter(9)"};
@@ -48,12 +44,12 @@ public class ProgrammeProfesseur{
                             i++;
                         }
                         if(ps.execute()){
-                            System.out.println("Insertion de l'étudiant réussie");
+                            System.out.println("Insertion de l'étudiant réussie\n");
                         }
 
 
                     } catch (SQLException e){
-                        System.out.println("Erreur lors de l’insertion d'un étudiant!");
+                        System.out.println("Erreur lors de l’insertion d'un étudiant!\n");
                         e.printStackTrace();
                     }
 
@@ -77,10 +73,10 @@ public class ProgrammeProfesseur{
                             i++;
                         }
                         if(ps.execute()){
-                            System.out.println("Insertion de l'entreprise réussie");
+                            System.out.println("Insertion de l'entreprise réussie\n");
                         }
                     } catch (SQLException e) {
-                        System.out.println("Erreur lors de l'insertion d'une entreprise");
+                        System.out.println("Erreur lors de l'insertion d'une entreprise\n");
                         e.printStackTrace();
                     }
                     break;
@@ -93,17 +89,19 @@ public class ProgrammeProfesseur{
                         ps.setString(1, reponseInsertionMotCle[0]);
 
                         if(ps.execute()){
-                            System.out.println("Insertion du mot clé réussie");
+                            System.out.println("Insertion du mot clé réussie\n");
                         }
                     } catch (SQLException e) {
-                        System.out.println("Erreur lors de l'insertion d'un mot clé");
+                        System.out.println("Erreur lors de l'insertion d'un mot clé\n");
                         e.printStackTrace();
                     }
                     break;
                 case "4":
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_offre_non_valide;");
-                        main.displayData(ps.executeQuery());
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_offre_stage_non_valide;");
+                        //main.displayData(ps.executeQuery());
+                        ResultSet rs = ps.executeQuery();
+                        main.displayData(rs);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -116,10 +114,10 @@ public class ProgrammeProfesseur{
                         ps.setString(1, reponseValideOffre[0]);
                         
                         if(ps.execute()) {
-                            System.out.println("Validation de l'offre réussie");
+                            System.out.println("Validation de l'offre réussie\n");
                         }
                     } catch (SQLException e) {
-                        System.out.println("Erreur lors de la validation de l'offre de stage");
+                        System.out.println("Erreur lors de la validation de l'offre de stage\n");
                         e.printStackTrace();
                     }
                     
@@ -134,7 +132,7 @@ public class ProgrammeProfesseur{
                     break;
                 case "7":
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_etudiants_sans_stage;");
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_etudiants_sans_stages;");
                         main.displayData(ps.executeQuery());
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -142,7 +140,7 @@ public class ProgrammeProfesseur{
                     break;
                 case "8":
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_offre_stage_attribues;");
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_offres_stage_attribues;");
                         main.displayData(ps.executeQuery());
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -152,7 +150,7 @@ public class ProgrammeProfesseur{
                     try {
                         conn.close();
                     } catch (SQLException e) {
-                        System.out.println("echec de la fermeture de la connexion");
+                        System.out.println("echec de la fermeture de la connexion\n");
                     }
                     fini = true;
                     break;

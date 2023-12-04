@@ -15,17 +15,19 @@ public class ProgrammeEntreprise{
             System.exit(1);
         }
 
+        System.out.println("Voici la section entreprise !");
+        String[] questionIdentificationEntreprise = {
+                "Quelle est votre identifiant ?",
+                "Quelle est votre mot de passe"
+        };
+        String[] identifiantsEntreprise = main.askForInput(questionIdentificationEntreprise);
+
+        String codeEntreprise = identifiantsEntreprise[0];
+
         boolean fini = false;
 
         while (!fini){
-            System.out.println("Voici la section entreprise !");
-            String[] questionIdentificationEntreprise = {
-                "Quelle est votre identifiant ?",
-                "Quelle est votre mot de passe"
-            };
-            String[] identifiantsEntreprise = main.askForInput(questionIdentificationEntreprise);
 
-            String codeEntreprise = identifiantsEntreprise[0];
 
             String[] questionChoixEntreprise =  {
                     "Encoder une offre de stage(1)\n" +
@@ -56,10 +58,10 @@ public class ProgrammeEntreprise{
                         ps.setString(3, reponseEncoderStage[1]);
 
                         if(ps.execute()){
-                            System.out.println("Insertion du stage reussie");
+                            System.out.println("Insertion du stage reussie\n");
                         }
                     } catch (SQLException e) {
-                        System.out.println("Erreur lors de l'insertion du stage");
+                        System.out.println("Erreur lors de l'insertion du stage\n");
                         e.printStackTrace();
                     }
                     break;
@@ -88,17 +90,17 @@ public class ProgrammeEntreprise{
                         }
 
                         if (ps.execute()) {
-                            System.out.println("Ajout du mot cle reussi");
+                            System.out.println("Ajout du mot cle reussi\n");
                         }
                     } catch (SQLException e) {
-                        System.out.println("Erreur lors de l'ajout du mot cle");
+                        System.out.println("Erreur lors de l'ajout du mot cle\n");
                         e.printStackTrace();
                     }
                     
                     break;
                 case "4":
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_offres_stage vos WHERE vos.code_offre_stage = ?;");
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_offres_stage WHERE id_entreprise = ?;");
                         ps.setString(1, codeEntreprise);
 
                         main.displayData(ps.executeQuery());
@@ -108,7 +110,14 @@ public class ProgrammeEntreprise{
 
                     break;
                 case "5":
-                    //to do => réflechir à la vue projet.voir_candidatures_par_entreprise
+                    try {
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_candidatures_par_entreprise(?)");
+                        ps.setString(1, codeEntreprise);
+                        main.displayData(ps.executeQuery());
+                    } catch (SQLException e){
+                        e.printStackTrace();
+                    }
+
                     break;
                 case "6":
                     String[] questionSelectionnerEtudiant = {
@@ -127,10 +136,10 @@ public class ProgrammeEntreprise{
                         }
 
                         if (ps.execute()) {
-                            System.out.println("Selection de l'etudiant reussie");
+                            System.out.println("Selection de l'etudiant reussie\n");
                         }
                     } catch (SQLException e) {
-                        System.out.println("Erreur lors de la selection d'un etudiant");
+                        System.out.println("Erreur lors de la selection d'un etudiant\n");
                         e.printStackTrace();
                     }
                     break;
@@ -146,10 +155,10 @@ public class ProgrammeEntreprise{
                         ps.setString(1, reponseAnnulerStage[0]);
 
                         if (ps.execute()) {
-                            System.out.println("Annulation du stage reussie");   
+                            System.out.println("Annulation du stage reussie\n");
                         }
                     } catch (SQLException e) {
-                        System.out.println("Erreur lors de l'annulation d'un stage");
+                        System.out.println("Erreur lors de l'annulation d'un stage\n");
                         e.printStackTrace();
                     }
                     break;
@@ -158,7 +167,7 @@ public class ProgrammeEntreprise{
                     try {
                         conn.close();
                     } catch (SQLException e) {
-                        System.out.println("echec de la fermeture de la connexion");
+                        System.out.println("echec de la fermeture de la connexion\n");
                     }
                     
                     break;
