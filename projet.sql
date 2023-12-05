@@ -324,6 +324,7 @@ GROUP BY et.mail, os.code_offre_stage, e.nom, e.adresse, os.description;
   Les offres de stage seront affichées comme au point précédent.
 */
 --todo le faire en view
+/*
 CREATE OR REPLACE FUNCTION projet.rechercher_offres_par_mot_cle(_etudiant_mail VARCHAR(50), _mot_cle VARCHAR(50))
     RETURNS TABLE
             (
@@ -346,7 +347,29 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+*/
 
+CREATE VIEW projet.rechercher_offres_par_mot_cle AS
+    SELECT et.mail,
+            os.code_offre_stage,
+           e.nom                                 AS nom_entreprise,
+           e.adresse                             AS adresse_entreprise,
+           os.description,
+           STRING_AGG(mc.libelle, ', ')::VARCHAR AS mots_cles
+
+    FROM projet.offres_stage os
+         JOIN
+     projet.entreprises e ON os.id_entreprise = e.id_entreprise
+         LEFT JOIN
+     projet.mots_cle_stage mcs ON os.code_offre_stage = mcs.code_offre_stage
+         LEFT JOIN
+     projet.mots_cle mc ON mcs.code_mot_cle = mc.code_mot_cle,
+     projet.etudiants et
+
+     WHERE et.id_etudiant = os.id_etudiant
+        AND et.semestre_du_stage = os.semestre
+        AND os.etat = 'Validée'
+GROUP BY et.mail, os.code_offre_stage, e.nom, e.adresse, os.description;
 
 
 --Etudiant .3
