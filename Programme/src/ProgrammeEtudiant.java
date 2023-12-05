@@ -8,7 +8,7 @@ public class ProgrammeEtudiant{
         String url="jdbc:postgresql://172.24.2.6:5432/dblucaslouies";
         Connection conn=null;
         try {
-            conn= DriverManager.getConnection(url,"lucaslouies","AK7F8EJUC");
+            conn= DriverManager.getConnection(url,"youssefabouhamid","B529DJVR0");
         } catch (SQLException e) {
             System.out.println("Impossible de joindre le server !");
             System.exit(1);
@@ -111,10 +111,10 @@ public class ProgrammeEtudiant{
                 case "6" :
                     try {
                         conn.close();
+                        fini = true;
                     } catch (SQLException e) {
                         System.out.println("echec de la fermeture de la connexion");
                     }
-                    fini = true;
                     break;
             }
         }
