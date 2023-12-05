@@ -54,21 +54,7 @@ CREATE TABLE projet.mots_cle_stage
     PRIMARY KEY (code_mot_cle, code_offre_stage)
 );
 
---Permissions____________________________________________________________________________________________________________________________
---Entreprise
-GRANT INSERT, SELECT, UPDATE ON projet.offres_stage TO mohamednori;
-GRANT SELECT ON projet.mots_cle TO mohamednori;
-GRANT INSERT ON projet.mots_cle_stage TO mohamednori;
-GRANT SELECT ON projet.etudiants TO mohamednori;
-GRANT SELECT, UPDATE ON projet.candidatures TO mohamednori;
 
---Etudiant
-GRANT INSERT, SELECT, UPDATE ON projet.candidatures TO youssefabouhamid;
-GRANT SELECT ON projet.etudiants TO youssefabouhamid;
-GRANT SELECT ON projet.offres_stage TO youssefabouhamid;
-GRANT SELECT ON projet.entreprises TO youssefabouhamid;
-GRANT SELECT ON projet.mots_cle_stage TO youssefabouhamid;
-GRANT SELECT ON projet.mots_cle TO youssefabouhamid;
 
 
 
@@ -80,8 +66,8 @@ CREATE OR REPLACE FUNCTION projet.encoder_etudiant(_nom VARCHAR(100), _prenom VA
 $$
 DECLARE
 BEGIN
-    INSERT INTO projet.etudiants
-    VALUES (DEFAULT, _nom, _prenom, _semestre, _mdp, DEFAULT, _mail);
+INSERT INTO projet.etudiants
+VALUES (DEFAULT, _nom, _prenom, _semestre, _mdp, DEFAULT, _mail);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -90,12 +76,12 @@ CREATE OR REPLACE FUNCTION projet.encoder_entreprise(_identifiant VARCHAR(3), _n
                                                      _mail VARCHAR(50), _adresse VARCHAR(100)) RETURNS varchar(3) AS
 $$
 DECLARE
-    id varchar(3) := '';
+id varchar(3) := '';
 BEGIN
-    INSERT INTO projet.entreprises
-    VALUES (_identifiant, _mdp, _mail, _adresse, _nom)
+INSERT INTO projet.entreprises
+VALUES (_identifiant, _mdp, _mail, _adresse, _nom)
     RETURNING id_entreprise INTO id;
-    RETURN id;
+RETURN id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -103,12 +89,12 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION projet.encoder_mot_cle(_libelle VARCHAR(50)) RETURNS INTEGER AS
 $$
 DECLARE
-    id INTEGER := 0;
+id INTEGER := 0;
 BEGIN
-    INSERT INTO projet.mots_cle
-    VALUES (DEFAULT, _libelle)
+INSERT INTO projet.mots_cle
+VALUES (DEFAULT, _libelle)
     RETURNING code_mot_cle INTO id;
-    RETURN id;
+RETURN id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -126,8 +112,8 @@ $$
 DECLARE
 
 BEGIN
-    UPDATE projet.offres_stage SET etat = 'Validée' WHERE code_offre_stage = _code_offre;
-    RETURN _code_offre;
+UPDATE projet.offres_stage SET etat = 'Validée' WHERE code_offre_stage = _code_offre;
+RETURN _code_offre;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -167,17 +153,17 @@ CREATE OR REPLACE FUNCTION projet.encoder_offre_stage(_description VARCHAR(50), 
                                                       _semestre VARCHAR(2)) RETURNS VARCHAR(5) AS
 $$
 DECLARE
-    _code_offre_stage   VARCHAR(5);
+_code_offre_stage   VARCHAR(5);
     _numero_offre_stage VARCHAR(2);
 BEGIN
-    SELECT COUNT(os.code_offre_stage) + 1
-    FROM projet.offres_stage os
-    WHERE os.id_entreprise = _code_entreprise
+SELECT COUNT(os.code_offre_stage) + 1
+FROM projet.offres_stage os
+WHERE os.id_entreprise = _code_entreprise
     INTO _numero_offre_stage;
-    _code_offre_stage := _code_entreprise || _numero_offre_stage;
-    INSERT INTO projet.offres_stage (code_offre_stage, description, semestre, etat, id_etudiant, id_entreprise)
-    VALUES (_code_offre_stage, _description, _semestre, DEFAULT, NULL, _code_entreprise);
-    RETURN _code_offre_stage;
+_code_offre_stage := _code_entreprise || _numero_offre_stage;
+INSERT INTO projet.offres_stage (code_offre_stage, description, semestre, etat, id_etudiant, id_entreprise)
+VALUES (_code_offre_stage, _description, _semestre, DEFAULT, NULL, _code_entreprise);
+RETURN _code_offre_stage;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -190,13 +176,13 @@ FROM projet.mots_cle mc;
 CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_offre_stage VARCHAR(3), _libelle_mot_cle VARCHAR(50)) RETURNS VARCHAR(9) AS
 $$
 DECLARE
-    concatenated_value VARCHAR(50) := '';
+concatenated_value VARCHAR(50) := '';
     temp_code_mot_cle  INTEGER;
 BEGIN
-    SELECT mc.code_mot_cle FROM projet.mots_cle mc WHERE mc.libelle = _libelle_mot_cle INTO temp_code_mot_cle;
-    concatenated_value := _libelle_mot_cle || '_' || _code_offre_stage;
-    INSERT INTO projet.mots_cle_stage(code_mot_cle, code_offre_stage) VALUES (temp_code_mot_cle, _code_offre_stage);
-    RETURN concatenated_value;
+SELECT mc.code_mot_cle FROM projet.mots_cle mc WHERE mc.libelle = _libelle_mot_cle INTO temp_code_mot_cle;
+concatenated_value := _libelle_mot_cle || '_' || _code_offre_stage;
+INSERT INTO projet.mots_cle_stage(code_mot_cle, code_offre_stage) VALUES (temp_code_mot_cle, _code_offre_stage);
+RETURN concatenated_value;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -248,20 +234,20 @@ DECLARE
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM projet.offres_stage WHERE id_entreprise = _id_entreprise) THEN
         RAISE EXCEPTION 'Il n''y a pas d''offre pour cette entreprise';
-    END IF;
-    RETURN QUERY
-        SELECT c.code_offre_stage,
-               c.etat,
-               e.nom,
-               e.prenom,
-               e.mail,
-               c.motivation
-        FROM projet.candidatures c
-                 JOIN
-             projet.etudiants e ON c.id_etudiant = e.id_etudiant
-                 JOIN
-             projet.offres_stage os ON c.code_offre_stage = os.code_offre_stage
-        WHERE os.id_entreprise = _id_entreprise;
+END IF;
+RETURN QUERY
+SELECT c.code_offre_stage,
+       c.etat,
+       e.nom,
+       e.prenom,
+       e.mail,
+       c.motivation
+FROM projet.candidatures c
+         JOIN
+     projet.etudiants e ON c.id_etudiant = e.id_etudiant
+         JOIN
+     projet.offres_stage os ON c.code_offre_stage = os.code_offre_stage
+WHERE os.id_entreprise = _id_entreprise;
 
 END;
 $$ LANGUAGE plpgsql;
@@ -273,13 +259,13 @@ CREATE OR REPLACE FUNCTION projet.selectionner_etudiant(_code_stage VARCHAR(3), 
 $$
     --L’opération échouera si l’offre de stage n’est pas une offre de l’entreprise => A FAIRE EN JAVA
 DECLARE
-    id_candidat INTEGER;
+id_candidat INTEGER;
 BEGIN
-    UPDATE projet.offres_stage SET etat = 'Attribuée' WHERE code_offre_stage = _code_stage;
+UPDATE projet.offres_stage SET etat = 'Attribuée' WHERE code_offre_stage = _code_stage;
 
-    SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO id_candidat;
-    UPDATE projet.candidatures SET etat = 'Acceptée' WHERE id_etudiant = id_candidat;
-    RETURN id_candidat;
+SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO id_candidat;
+UPDATE projet.candidatures SET etat = 'Acceptée' WHERE id_etudiant = id_candidat;
+RETURN id_candidat;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -289,7 +275,7 @@ CREATE OR REPLACE FUNCTION projet.annuler_stage(_code_stage VARCHAR(3)) RETURNS 
 $$
 DECLARE
 BEGIN
-    UPDATE projet.offres_stage SET etat = 'Annulée' WHERE code_offre_stage = _code_stage;
+UPDATE projet.offres_stage SET etat = 'Annulée' WHERE code_offre_stage = _code_stage;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -323,7 +309,7 @@ FROM projet.offres_stage os
      projet.etudiants et
 
 WHERE os.etat = 'Validée'
-  AND os.id_etudiant = et.id_etudiant AND os.semestre = et.semestre_du_stage --TODO
+  AND os.semestre = et.semestre_du_stage --TODO
 GROUP BY et.mail, os.code_offre_stage, e.nom, e.adresse, os.description;
 
 --Etudiant .2
@@ -359,14 +345,14 @@ $$ LANGUAGE plpgsql;
 */
 
 CREATE VIEW projet.rechercher_offres_par_mot_cle AS
-    SELECT et.mail,
-            os.code_offre_stage,
-           e.nom                                 AS nom_entreprise,
-           e.adresse                             AS adresse_entreprise,
-           os.description,
-           STRING_AGG(mc.libelle, ', ')::VARCHAR AS mots_cles
+SELECT et.mail,
+       os.code_offre_stage,
+       e.nom                                 AS nom_entreprise,
+       e.adresse                             AS adresse_entreprise,
+       os.description,
+       STRING_AGG(mc.libelle, ', ')::VARCHAR AS mots_cles
 
-    FROM projet.offres_stage os
+FROM projet.offres_stage os
          JOIN
      projet.entreprises e ON os.id_entreprise = e.id_entreprise
          LEFT JOIN
@@ -375,9 +361,8 @@ CREATE VIEW projet.rechercher_offres_par_mot_cle AS
      projet.mots_cle mc ON mcs.code_mot_cle = mc.code_mot_cle,
      projet.etudiants et
 
-     WHERE et.id_etudiant = os.id_etudiant
-        AND et.semestre_du_stage = os.semestre
-        AND os.etat = 'Validée'
+WHERE et.semestre_du_stage = os.semestre
+  AND os.etat = 'Validée'
 GROUP BY et.mail, os.code_offre_stage, e.nom, e.adresse, os.description;
 
 
@@ -389,20 +374,20 @@ GROUP BY et.mail, os.code_offre_stage, e.nom, e.adresse, os.description;
   si l’offre n’est pas dans l’état validée ou si l’offre ne correspond pas au bon semestre.
   */
 CREATE
-    OR REPLACE FUNCTION projet.poser_candidature(_mail_etudiant VARCHAR(50), _motivation VARCHAR(1000),
+OR REPLACE FUNCTION projet.poser_candidature(_mail_etudiant VARCHAR(50), _motivation VARCHAR(1000),
                                                  _code_offre_stage VARCHAR(5)) RETURNS INTEGER
 AS
 $$
 DECLARE
-    _id_candidature INTEGER;
+_id_candidature INTEGER;
     _id_etudiant    INTEGER;
 BEGIN
-    SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO _id_etudiant;
-    INSERT INTO projet.candidatures (etat, motivation, code_offre_stage, id_etudiant)
-    VALUES ('En attente', _motivation, _code_offre_stage, _id_etudiant)
+SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO _id_etudiant;
+INSERT INTO projet.candidatures (etat, motivation, code_offre_stage, id_etudiant)
+VALUES ('En attente', _motivation, _code_offre_stage, _id_etudiant)
     RETURNING id_candidature INTO _id_candidature;
 
-    RETURN _id_candidature;
+RETURN _id_candidature;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -431,17 +416,44 @@ peuvent être annulées que si elles sont « en attente ».
 CREATE OR REPLACE FUNCTION projet.annuler_candidature(_mail_etudiant VARCHAR(50), _code_offre_stage VARCHAR(5)) RETURNS VARCHAR(5) AS --fixme décrémenter nb candidature en attente
 $$
 DECLARE
-    _id_etudiant INTEGER;
+_id_etudiant INTEGER;
 BEGIN
-    SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO _id_etudiant;
-    UPDATE projet.candidatures
-    SET etat = 'Annulée'
-    WHERE code_offre_stage = _code_offre_stage
+SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO _id_etudiant;
+UPDATE projet.candidatures
+SET etat = 'Annulée'
+WHERE code_offre_stage = _code_offre_stage
       AND etat = 'En attente'
       AND id_etudiant = _id_etudiant;
-    RETURN _code_offre_stage;
+RETURN _code_offre_stage;
 END;
 $$ LANGUAGE plpgsql;
+
+--Permissions____________________________________________________________________________________________________________________________
+GRANT CONNECT ON DATABASE dblucaslouies TO mohamednori, youssefabouhamid;
+GRANT USAGE ON SCHEMA projet TO mohamednori, youssefabouhamid;
+
+--Entreprise
+GRANT INSERT, SELECT, UPDATE ON projet.offres_stage TO mohamednori;
+GRANT SELECT ON projet.mots_cle TO mohamednori;
+GRANT INSERT ON projet.mots_cle_stage TO mohamednori;
+GRANT SELECT ON projet.etudiants TO mohamednori;
+GRANT SELECT, UPDATE ON projet.candidatures TO mohamednori;
+GRANT SELECT ON projet.voir_mots_cle TO mohamednori;
+GRANT SELECT ON projet.voir_offres_stage TO mohamednori;
+GRANT SELECT ON projet.voir_offres_stage TO mohamednori;
+
+
+--Etudiant
+GRANT INSERT, SELECT, UPDATE ON projet.candidatures TO youssefabouhamid;
+GRANT SELECT ON projet.etudiants TO youssefabouhamid;
+GRANT SELECT ON projet.offres_stage TO youssefabouhamid;
+GRANT SELECT ON projet.entreprises TO youssefabouhamid;
+GRANT SELECT ON projet.mots_cle_stage TO youssefabouhamid;
+GRANT SELECT ON projet.mots_cle TO youssefabouhamid;
+GRANT SELECT ON projet.get_offres_stage_valides TO youssefabouhamid;
+GRANT SELECT ON projet.rechercher_offres_par_mot_cle TO youssefabouhamid;
+GRANT SELECT ON projet.voirOffresCandidatureEtudiant TO youssefabouhamid;
+
 
 --Triggers__________________________________________________________________________________________________________________________________________________________
 
@@ -456,8 +468,8 @@ BEGIN
        (OLD.etat = 'Annulée' AND NEW.etat != 'Annulée')
     THEN
         RAISE 'Changement d''état non valide';
-    END IF;
-    RETURN NEW;
+END IF;
+RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -465,7 +477,7 @@ CREATE TRIGGER trigger_vérification_etat_offre_stage
     AFTER UPDATE
     ON projet.offres_stage
     FOR EACH ROW
-EXECUTE PROCEDURE projet.vérification_etat_offre_stage();
+    EXECUTE PROCEDURE projet.vérification_etat_offre_stage();
 
 
 CREATE OR REPLACE FUNCTION projet.vérification_etat_candidature() RETURNS TRIGGER AS
@@ -476,8 +488,8 @@ BEGIN
     IF ((old.etat = 'Annulée' OR old.etat = 'Acceptée' OR old.etat = 'Refusée') AND old.etat != new.etat)
     THEN
         RAISE 'Chanement d etat non valide';
-    END IF;
-    RETURN new;
+END IF;
+RETURN new;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -485,7 +497,7 @@ CREATE TRIGGER trigger_vérification_etat_candidature
     AFTER UPDATE
     ON projet.candidatures
     FOR EACH ROW
-EXECUTE PROCEDURE projet.vérification_etat_candidature();
+    EXECUTE PROCEDURE projet.vérification_etat_candidature();
 
 
 CREATE OR REPLACE FUNCTION projet.vérification_insert_offre_stage() RETURNS TRIGGER AS
@@ -503,8 +515,8 @@ BEGIN
     THEN
         RAISE 'offre de stage déjà attribuée lors de ce semestre';
 
-    END IF;
-    RETURN NULL;
+END IF;
+RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -512,31 +524,31 @@ CREATE TRIGGER vérification_insert_offre_stage
     AFTER INSERT
     ON projet.offres_stage
     FOR EACH ROW
-EXECUTE PROCEDURE projet.vérification_insert_offre_stage();
+    EXECUTE PROCEDURE projet.vérification_insert_offre_stage();
 
 
 CREATE OR REPLACE FUNCTION projet.vérification_insert_stage_mot_cle() RETURNS TRIGGER AS
 $$
 DECLARE
-    etat_stage     VARCHAR(50);
+etat_stage     VARCHAR(50);
     nombre_mot_cle INTEGER;
 BEGIN
-    SELECT os.etat FROM projet.offres_stage os WHERE NEW.code_offre_stage = os.code_offre_stage INTO etat_stage;
-    IF (etat_stage = 'Attribuée' OR etat_stage = 'Annulée')
+SELECT os.etat FROM projet.offres_stage os WHERE NEW.code_offre_stage = os.code_offre_stage INTO etat_stage;
+IF (etat_stage = 'Attribuée' OR etat_stage = 'Annulée')
     THEN
         RAISE 'offre de stage indisponible';
-    END IF;
+END IF;
 
-    SELECT COUNT(mcs.code_mot_cle)
-    FROM projet.mots_cle_stage mcs
-    WHERE mcs.code_offre_stage = NEW.code_offre_stage
+SELECT COUNT(mcs.code_mot_cle)
+FROM projet.mots_cle_stage mcs
+WHERE mcs.code_offre_stage = NEW.code_offre_stage
     INTO nombre_mot_cle;
 
-    IF (nombre_mot_cle >= 4)
+IF (nombre_mot_cle >= 4)
     THEN
         RAISE 'nombre de mot cles atteints';
-    END IF;
-    RETURN NULL;
+END IF;
+RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -544,7 +556,7 @@ CREATE TRIGGER vérification_insert_offre_stage
     AFTER INSERT
     ON projet.mots_cle_stage
     FOR EACH ROW
-EXECUTE PROCEDURE projet.vérification_insert_stage_mot_cle();
+    EXECUTE PROCEDURE projet.vérification_insert_stage_mot_cle();
 
 
 CREATE OR REPLACE FUNCTION projet.annulation_validation_stage() RETURNS TRIGGER AS
@@ -554,29 +566,29 @@ DECLARE
 BEGIN
     IF ((OLD.etat = 'Validée' AND NEW.etat = 'Annulée'))
     THEN
-        UPDATE projet.candidatures SET etat = 'Refusée' WHERE code_offre_stage = NEW.code_offre_stage;
-    END IF;
+UPDATE projet.candidatures SET etat = 'Refusée' WHERE code_offre_stage = NEW.code_offre_stage;
+END IF;
 
     IF (OLD.etat = 'Validée' AND NEW.etat = 'Attribuée')
     THEN
 
-        UPDATE projet.candidatures
-        SET etat = 'Refusée'
-        WHERE code_offre_stage = NEW.code_offre_stage
-          AND id_etudiant != NEW.id_etudiant;
+UPDATE projet.candidatures
+SET etat = 'Refusée'
+WHERE code_offre_stage = NEW.code_offre_stage
+  AND id_etudiant != NEW.id_etudiant;
 
-        UPDATE projet.candidatures
-        SET etat = 'Annulée'
-        WHERE id_etudiant = NEW.id_etudiant
-          AND code_offre_stage != NEW.code_offre_stage;
+UPDATE projet.candidatures
+SET etat = 'Annulée'
+WHERE id_etudiant = NEW.id_etudiant
+  AND code_offre_stage != NEW.code_offre_stage;
 
-        UPDATE projet.offres_stage
-        SET etat = 'Annulée'
-        WHERE id_entreprise = NEW.id_entreprise
-          AND code_offre_stage != NEW.code_offre_stage
+UPDATE projet.offres_stage
+SET etat = 'Annulée'
+WHERE id_entreprise = NEW.id_entreprise
+  AND code_offre_stage != NEW.code_offre_stage
           AND semestre = NEW.semestre;
-    END IF;
-    RETURN NULL;
+END IF;
+RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -584,63 +596,63 @@ CREATE TRIGGER annulation_validation_stage
     AFTER UPDATE
     ON projet.offres_stage
     FOR EACH ROW
-EXECUTE PROCEDURE projet.annulation_validation_stage();
+    EXECUTE PROCEDURE projet.annulation_validation_stage();
 
 
 CREATE OR REPLACE FUNCTION projet.verification_poser_candidature() RETURNS TRIGGER AS
 $$
 DECLARE
-    candidature_acceptee   INTEGER;
+candidature_acceptee   INTEGER;
     candidature_existante  INTEGER;
     offre_validee          INTEGER;
     semestre_correspondant INTEGER;
 BEGIN
     -- Vérification : Il ne peut poser de candidature s’il a déjà une candidature acceptée
-    SELECT COUNT(*)
-    INTO candidature_acceptee
-    FROM projet.candidatures
-    WHERE id_etudiant = NEW.id_etudiant
-      AND etat = 'Acceptée';
+SELECT COUNT(*)
+INTO candidature_acceptee
+FROM projet.candidatures
+WHERE id_etudiant = NEW.id_etudiant
+  AND etat = 'Acceptée';
 
-    IF candidature_acceptee > 0 THEN
+IF candidature_acceptee > 0 THEN
         RAISE 'Vous avez déjà une candidature acceptée.';
-    END IF;
+END IF;
 
     -- Vérification : S’il a déjà posé sa candidature pour cette offre
-    SELECT COUNT(*)
-    INTO candidature_existante
-    FROM projet.candidatures
-    WHERE id_etudiant = NEW.id_etudiant
-      AND code_offre_stage = NEW.code_offre_stage;
+SELECT COUNT(*)
+INTO candidature_existante
+FROM projet.candidatures
+WHERE id_etudiant = NEW.id_etudiant
+  AND code_offre_stage = NEW.code_offre_stage;
 
-    IF candidature_existante > 0 THEN
+IF candidature_existante > 0 THEN
         RAISE 'Vous avez déjà posé une candidature pour cette offre.';
-    END IF;
+END IF;
 
     -- Vérification : Si l’offre n’est pas dans l’état validée
-    SELECT COUNT(*)
-    INTO offre_validee
-    FROM projet.offres_stage
-    WHERE code_offre_stage = NEW.code_offre_stage
-      AND etat = 'Validée';
+SELECT COUNT(*)
+INTO offre_validee
+FROM projet.offres_stage
+WHERE code_offre_stage = NEW.code_offre_stage
+  AND etat = 'Validée';
 
-    IF offre_validee = 0 THEN
+IF offre_validee = 0 THEN
         RAISE 'Cette offre de stage n''est pas dans l''état validée.';
-    END IF;
+END IF;
 
     -- Vérification : Si l’offre ne correspond pas au bon semestre
-    SELECT COUNT(*)
-    INTO semestre_correspondant
-    FROM projet.etudiants e
-    WHERE e.id_etudiant = NEW.id_etudiant
-      AND e.semestre_du_stage =
-          (SELECT semestre FROM projet.offres_stage WHERE code_offre_stage = NEW.code_offre_stage);
+SELECT COUNT(*)
+INTO semestre_correspondant
+FROM projet.etudiants e
+WHERE e.id_etudiant = NEW.id_etudiant
+  AND e.semestre_du_stage =
+      (SELECT semestre FROM projet.offres_stage WHERE code_offre_stage = NEW.code_offre_stage);
 
-    IF semestre_correspondant = 0 THEN
+IF semestre_correspondant = 0 THEN
         RAISE 'Cette offre de stage ne correspond pas à votre semestre.';
-    END IF;
+END IF;
 
-    RETURN NEW;
+RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -648,20 +660,20 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION projet.mettre_a_jour_nb_candidature_en_attente() RETURNS TRIGGER AS
 $$
 DECLARE
-    _nb_candidature_en_attente INTEGER;
+_nb_candidature_en_attente INTEGER;
 BEGIN
-    SELECT COUNT(c.id_etudiant)
-    FROM projet.candidatures c
-    WHERE c.id_etudiant = NEW.id_etudiant
-      AND c.etat = 'En attente'
+SELECT COUNT(c.id_etudiant)
+FROM projet.candidatures c
+WHERE c.id_etudiant = NEW.id_etudiant
+  AND c.etat = 'En attente'
     INTO _nb_candidature_en_attente;
 
-    UPDATE
-        projet.etudiants
-    SET nb_candidature_en_attente = _nb_candidature_en_attente
+UPDATE
+    projet.etudiants
+SET nb_candidature_en_attente = _nb_candidature_en_attente
     where id_etudiant = new.id_etudiant;
 
-    RETURN new;
+RETURN new;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -669,10 +681,10 @@ CREATE TRIGGER trigger_verification_poser_candidature --fixme
     BEFORE INSERT
     ON projet.candidatures
     FOR EACH ROW
-EXECUTE PROCEDURE projet.verification_poser_candidature();
+    EXECUTE PROCEDURE projet.verification_poser_candidature();
 
 CREATE TRIGGER trigger_mettre_a_jour_nb_candidature_en_attente -- TODO À TESTER
     AFTER INSERT OR UPDATE
-    ON projet.candidatures
-    FOR EACH ROW
-EXECUTE PROCEDURE projet.mettre_a_jour_nb_candidature_en_attente();
+                        ON projet.candidatures
+                        FOR EACH ROW
+                        EXECUTE PROCEDURE projet.mettre_a_jour_nb_candidature_en_attente();

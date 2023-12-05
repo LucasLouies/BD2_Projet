@@ -39,7 +39,8 @@ public class ProgrammeEtudiant{
             switch (reponseChoixEtudiant[0]) {
                 case "1" :
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT projet.get_offres_stage_valides(?);");
+                        PreparedStatement ps = conn.prepareStatement("SELECT  code_offre_stage,nom_entreprise,adresse_entreprise,description,mots_cles " +
+                                "FROM projet.get_offres_stage_valides WHERE mail_etudiant = ?;");
                         ps.setString(1, mailEtudiant);
 
                         main.displayData(ps.executeQuery());
@@ -52,7 +53,7 @@ public class ProgrammeEtudiant{
                     String[] questionMotCle = {"Veuillez entrer un mot cle"};
                     String[] reponseMotCle = main.askForInput(questionMotCle);
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT projet.rechercher_offres_par_mot_cle(?,?);");
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.rechercher_offres_par_mot_cle WHERE mail = ? AND mots_cles ILIKE % || ? || %;");
                         ps.setString(1, mailEtudiant);
                         ps.setString(2, reponseMotCle[0]);
 
