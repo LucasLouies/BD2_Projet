@@ -149,10 +149,10 @@ public class ProgrammeProfesseur{
                 case "9":
                     try {
                         conn.close();
+                        fini = true;
                     } catch (SQLException e) {
                         System.out.println("echec de la fermeture de la connexion\n");
                     }
-                    fini = true;
                     break;
             }
         }

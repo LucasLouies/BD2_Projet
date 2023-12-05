@@ -9,7 +9,7 @@ public class ProgrammeEntreprise{
         String url="jdbc:postgresql://172.24.2.6:5432/dblucaslouies";
         Connection conn=null;
         try {
-            conn= DriverManager.getConnection(url,"lucaslouies","AK7F8EJUC");
+            conn= DriverManager.getConnection(url,"mohamednori","O39JIE46N");
         } catch (SQLException e) {
             System.out.println("Impossible de joindre le server !");
             System.exit(1);
@@ -27,8 +27,6 @@ public class ProgrammeEntreprise{
         boolean fini = false;
 
         while (!fini){
-
-
             String[] questionChoixEntreprise =  {
                     "Encoder une offre de stage(1)\n" +
                             "Voir les mots clés(2)\n" +
@@ -163,16 +161,14 @@ public class ProgrammeEntreprise{
                     }
                     break;
                 case "8":
-                    fini = true;
                     try {
                         conn.close();
+                        fini = true;
                     } catch (SQLException e) {
                         System.out.println("echec de la fermeture de la connexion\n");
                     }
-                    
                     break;
             }
         }
-
     }
 }

@@ -58,9 +58,18 @@ CREATE TABLE projet.mots_cle_stage
 --Entreprise
 GRANT INSERT, SELECT, UPDATE ON projet.offres_stage TO mohamednori;
 GRANT SELECT ON projet.mots_cle TO mohamednori;
+GRANT INSERT ON projet.mots_cle_stage TO mohamednori;
+GRANT SELECT ON projet.etudiants TO mohamednori;
+GRANT SELECT, UPDATE ON projet.candidatures TO mohamednori;
 
 --Etudiant
-GRANT INSERT, SELECT, UPDATE on projet.candidatures TO youssefabouhamid;
+GRANT INSERT, SELECT, UPDATE ON projet.candidatures TO youssefabouhamid;
+GRANT SELECT ON projet.etudiants TO youssefabouhamid;
+GRANT SELECT ON projet.offres_stage TO youssefabouhamid;
+GRANT SELECT ON projet.entreprises TO youssefabouhamid;
+GRANT SELECT ON projet.mots_cle_stage TO youssefabouhamid;
+GRANT SELECT ON projet.mots_cle TO youssefabouhamid;
+
 
 
 --PROFFESSEUR____________________________________________________________________________________________________________________________
