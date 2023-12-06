@@ -440,7 +440,8 @@ GRANT SELECT ON projet.etudiants TO mohamednori;
 GRANT SELECT, UPDATE ON projet.candidatures TO mohamednori;
 GRANT SELECT ON projet.voir_mots_cle TO mohamednori;
 GRANT SELECT ON projet.voir_offres_stage TO mohamednori;
-GRANT SELECT ON projet.voir_offres_stage TO mohamednori;
+GRANT SELECT ON projet.entreprises TO mohamednori;
+
 
 
 --Etudiant
