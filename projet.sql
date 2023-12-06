@@ -8,7 +8,7 @@ CREATE TABLE projet.etudiants
     semestre_du_stage         VARCHAR(2)         NOT NULL CHECK (semestre_du_stage SIMILAR TO 'Q[1-2]'),
     mdp                       VARCHAR(100)       NOT NULL CHECK (mdp <> ''),
     nb_candidature_en_attente INTEGER            NOT NULL DEFAULT 0 CHECK ( nb_candidature_en_attente >= 0 ),
-    mail                      VARCHAR(50) UNIQUE NOT NULL CHECK ( mail SIMILAR TO '\w+\.\w+@student\.vinci\.be')
+    mail                      VARCHAR(50) UNIQUE NOT NULL CHECK ( mail SIMILAR TO '\w+\.\w+@[student\.]{0,1}vinci\.be')
 );
 
 CREATE TABLE projet.entreprises
