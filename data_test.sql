@@ -1,53 +1,42 @@
 -- Ajout d'étudiants avec des profils différents
-SELECT projet.encoder_etudiant('Dupont', 'Jean', 'jean.dupont@student.vinci.be', 'Q1', 'mdp1');
-SELECT projet.encoder_etudiant('Martin', 'Alice', 'alice.martin@student.vinci.be', 'Q2', 'mdp2');
-SELECT projet.encoder_etudiant('Lefevre', 'Pierre', 'pierre.lefevre@student.vinci.be', 'Q1', 'mdp3');
-
--- Ajout d'entreprises
-SELECT projet.encoder_entreprise('ABC', 'Entreprise ABC', 'mdpABC', 'entreprise.abc@popo.be',
-                                 '123 Rue de l''Entreprise');
-SELECT projet.encoder_entreprise('XYZ', 'Entreprise XYZ', 'mdpXYZ', 'entreprise.xyz@yoyo21.be',
-                                 '456 Rue de l''Entreprise');
+SELECT projet.encoder_etudiant('Jean', 'De', 'j.d@vinci.be', 'Q2', 'Test');
+SELECT projet.encoder_etudiant('Marc', 'Du', 'm.d@vinci.be', 'Q1',  'Test');
 
 -- Ajout de mots-clés
 SELECT projet.encoder_mot_cle('Java');
-SELECT projet.encoder_mot_cle('SQL');
 SELECT projet.encoder_mot_cle('Web');
+SELECT projet.encoder_mot_cle('Python');
+
+-- Ajout d'entreprises
+SELECT projet.encoder_entreprise('VIN','NOME1','mdpE1','vinci@vinci.be','Bruxelles');
 
 -- Ajout d'offres de stage pour les étudiants et les entreprises
-SELECT projet.encoder_offre_stage('Description stage ABC1', 'ABC', 'Q1');
-SELECT projet.encoder_offre_stage('Description stage ABC2', 'ABC', 'Q2');
-SELECT projet.encoder_offre_stage('Description stage XYZ1', 'XYZ', 'Q1');
-SELECT projet.encoder_offre_stage('Description stage XYZ2', 'XYZ', 'Q2');
+SELECT projet.encoder_offre_stage('descVIN1', 'VIN', 'Q2');
+SELECT projet.encoder_offre_stage('descVIN2', 'VIN', 'Q2');
+SELECT projet.encoder_offre_stage('descVIN3', 'VIN', 'Q2');
+SELECT projet.encoder_offre_stage('descVIN4', 'VIN', 'Q2');
+SELECT projet.encoder_offre_stage('descVIN5', 'VIN', 'Q1');
+
+-- Valider offre de stage
+SELECT projet.valider_offre_stage('VIN1');
+SELECT projet.valider_offre_stage('VIN4');
+SELECT projet.valider_offre_stage('VIN5');
 
 -- Ajout de mots-clés pour les offres de stage
-SELECT projet.valider_offre_stage('ABC1');
-SELECT projet.valider_offre_stage('ABC2');
-SELECT projet.valider_offre_stage('XYZ1');
-SELECT projet.valider_offre_stage('XYZ2');
+SELECT projet.ajouter_mot_cle('VIN3', 1);
+SELECT projet.ajouter_mot_cle('VIN5', 1);
 
 -- Assurez-vous que les étudiants et les offres de stage ont le même semestre
 -- Exemple : Les étudiants posent des candidatures pour des offres de stage avec le même semestre
-SELECT projet.poser_candidature('jean.dupont@student.vinci.be', 'Motivation pour ABC1', 'ABC1');
-SELECT projet.poser_candidature('jean.dupont@student.vinci.be', 'Motivation pour XYZ1', 'XYZ1');
-SELECT projet.poser_candidature('pierre.lefevre@student.vinci.be', 'Motivation pour XYZ1', 'XYZ1');
+SELECT projet.poser_candidature('j.d@vinci.be','JSPENCORE', 'VIN4');
+SELECT projet.poser_candidature('m.d@vinci.be','JSPENCORE', 'VIN5');
 
-select projet.ajouter_mot_cle('ABC1', 'Java');
-select projet.ajouter_mot_cle('ABC1', 'SQL');
-/*
-SELECT * FROM projet.get_offres_stage_valides(1);
 
-SELECT *
-FROM projet.rechercher_offres_par_mot_cle(1,'Java');
-SELECT *
-FROM projet.rechercher_offres_par_mot_cle(1,'SQL');
-SELECT *
-FROM projet.rechercher_offres_par_mot_cle(1,'Web');
+-- ajouter entreprise
+SELECT projet.encoder_entreprise('ULB','Universite LB','mdpE1','ulb@ulb.be','Bruxelles');
 
-select *
-from projet.voir_offres_stage;
+-- encoder stage
+SELECT projet.encoder_offre_stage('stage javascript', 'ULB', 'Q2');
 
-SELECT * FROM projet.voir_candidatures_par_entreprise('ABC');
-SELECT * FROM projet.voir_candidatures_par_entreprise('XYZ');*/
-
-SELECT projet.annuler_candidature('jean.dupont@student.vinci.be', 'ABC1');
+-- valider stage
+SELECT projet.valider_offre_stage('ULB1');
