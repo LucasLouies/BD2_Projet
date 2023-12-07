@@ -80,13 +80,11 @@ public class ProgrammeEntreprise{
 
                     String[] reponseAjouterMotCle = main.askForInput(questionAjouterMotCle);
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT projet.ajouter_mot_cle(?,?);");
+                        PreparedStatement ps = conn.prepareStatement("SELECT projet.ajouter_mot_cle(?,?,?);");
                         int i = 0;
-                        for (String reponse : reponseAjouterMotCle) {
-                            ps.setString(i + 1, reponse);
-                            i++;
-                        }
-
+                        ps.setString(1, questionAjouterMotCle[0]);
+                        ps.setString(2, questionAjouterMotCle[1]);
+                        ps.setString(3, codeEntreprise);
                         if (ps.execute()) {
                             System.out.println("Ajout du mot cle reussi\n");
                         }
