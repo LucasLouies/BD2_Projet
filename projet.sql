@@ -173,13 +173,13 @@ SELECT mc.libelle
 FROM projet.mots_cle mc;
 
 --Entreprise .3 todo à vérifier
-CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_offre_stage VARCHAR(3), _libelle_mot_cle VARCHAR(50), _code_entreprise VARCHAR(3)) RETURNS VARCHAR(9) AS
+CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_offre_stage VARCHAR(4), _libelle_mot_cle VARCHAR(50), _code_entreprise VARCHAR(3)) RETURNS VARCHAR(9) AS
 $$
 DECLARE
 concatenated_value VARCHAR(50) := '';
     temp_code_mot_cle  INTEGER;
 BEGIN
-IF NOT EXISTS (SELECT e.* FROM projet.entreprises e WHERE e.code_offre_stage = _code_offre_stage AND e.code_entreprise = _code_entreprise) THEN
+IF NOT EXISTS (SELECT os.* FROM projet.offres_stage os WHERE os.code_offre_stage = _code_offre_stage AND os.id_entreprise = _code_entreprise) THEN
     RAISE EXCEPTION 'Ceci n est pas votre offre de stage';
 END IF;
 SELECT mc.code_mot_cle FROM projet.mots_cle mc WHERE mc.libelle = _libelle_mot_cle INTO temp_code_mot_cle;
