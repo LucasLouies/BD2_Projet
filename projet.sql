@@ -414,7 +414,7 @@ GRANT SELECT ON projet.voir_mots_cle TO mohamednori;
 GRANT SELECT ON projet.voir_offres_stage TO mohamednori;
 GRANT SELECT ON projet.entreprises TO mohamednori;
 
---Etudiant
+--Etudiant_
 GRANT INSERT, SELECT, UPDATE ON projet.candidatures TO youssefabouhamid;
 GRANT SELECT, UPDATE ON projet.etudiants TO youssefabouhamid;
 GRANT SELECT ON projet.offres_stage TO youssefabouhamid;
