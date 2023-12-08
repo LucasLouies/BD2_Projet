@@ -399,6 +399,7 @@ RETURN _code_offre_stage;
 END;
 $$ LANGUAGE plpgsql;
 
+
 --Permissions____________________________________________________________________________________________________________________________
 GRANT CONNECT ON DATABASE dblucaslouies TO mohamednori, youssefabouhamid;
 GRANT USAGE ON SCHEMA projet TO mohamednori, youssefabouhamid;
@@ -412,8 +413,6 @@ GRANT SELECT, UPDATE ON projet.candidatures TO mohamednori;
 GRANT SELECT ON projet.voir_mots_cle TO mohamednori;
 GRANT SELECT ON projet.voir_offres_stage TO mohamednori;
 GRANT SELECT ON projet.entreprises TO mohamednori;
-
-
 
 --Etudiant
 GRANT INSERT, SELECT, UPDATE ON projet.candidatures TO youssefabouhamid;

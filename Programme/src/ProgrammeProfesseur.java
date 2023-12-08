@@ -36,6 +36,10 @@ public class ProgrammeProfesseur{
                     };
                     String[] reponseInsertionEtudiant = main.askForInput(questionInsertionEtudiant);
 
+                    String selEtudiant = BCrypt.gensalt();
+                    reponseInsertionEtudiant[4] = BCrypt.hashpw(reponseInsertionEtudiant[4], selEtudiant);
+
+
                     try {
                         PreparedStatement ps = conn.prepareStatement("SELECT projet.encoder_etudiant(?,?,?,?,?);");
                         int i = 0;
@@ -64,6 +68,9 @@ public class ProgrammeProfesseur{
                     };
 
                     String[] reponseInsertionEntreprise = main.askForInput(questionInsertionEntreprise);
+
+                    String selEntreprise = BCrypt.gensalt();
+                    reponseInsertionEntreprise[2] = BCrypt.hashpw(reponseInsertionEntreprise[2], selEntreprise);
 
                     try {
                         PreparedStatement ps = conn.prepareStatement("SELECT projet.encoder_entreprise(?,?,?,?,?);");
