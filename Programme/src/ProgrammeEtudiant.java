@@ -72,7 +72,7 @@ public class ProgrammeEtudiant{
                     String[] questionMotCle = {"Veuillez entrer un mot cle"};
                     String[] reponseMotCle = main.askForInput(questionMotCle);
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.rechercher_offres_par_mot_cle WHERE mail = ? AND mots_cles ILIKE % || ? || %;");
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.rechercher_offres_par_mot_cle WHERE mail = ? AND mots_cles ILIKE '%' || ? || '%';");
                         ps.setString(1, mailEtudiant);
                         ps.setString(2, reponseMotCle[0]);
 
