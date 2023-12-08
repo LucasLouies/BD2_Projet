@@ -407,7 +407,7 @@ GRANT USAGE ON SCHEMA projet TO mohamednori, youssefabouhamid;
 --Entreprise
 GRANT INSERT, SELECT, UPDATE ON projet.offres_stage TO mohamednori;
 GRANT SELECT ON projet.mots_cle TO mohamednori;
-GRANT INSERT ON projet.mots_cle_stage TO mohamednori;
+GRANT INSERT, SELECT ON projet.mots_cle_stage TO mohamednori;
 GRANT SELECT ON projet.etudiants TO mohamednori;
 GRANT SELECT, UPDATE ON projet.candidatures TO mohamednori;
 GRANT SELECT ON projet.voir_mots_cle TO mohamednori;
