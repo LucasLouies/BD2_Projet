@@ -81,9 +81,8 @@ public class ProgrammeEntreprise{
                     String[] reponseAjouterMotCle = main.askForInput(questionAjouterMotCle);
                     try {
                         PreparedStatement ps = conn.prepareStatement("SELECT projet.ajouter_mot_cle(?,?,?);");
-                        int i = 0;
-                        ps.setString(1, questionAjouterMotCle[0]);
-                        ps.setString(2, questionAjouterMotCle[1]);
+                        ps.setString(1, reponseAjouterMotCle[0]);
+                        ps.setString(2, reponseAjouterMotCle[1]);
                         ps.setString(3, codeEntreprise);
                         if (ps.execute()) {
                             System.out.println("Ajout du mot cle reussi\n");
@@ -106,9 +105,13 @@ public class ProgrammeEntreprise{
 
                     break;
                 case "5":
+                    String[] questionVoirCandidature = {"Quel est le code de l'offre dont les candidatures vous intéresse ?"};
+
+                    String[] reponseVoirCandidature = main.askForInput(questionVoirCandidature);
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_candidatures_par_entreprise(?)");
+                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_candidatures_par_entreprise(?, ?)");
                         ps.setString(1, codeEntreprise);
+                        ps.setString(2, reponseVoirCandidature[0]);
                         main.displayData(ps.executeQuery());
                     } catch (SQLException e){
                         e.printStackTrace();
@@ -124,12 +127,10 @@ public class ProgrammeEntreprise{
                     String[] reponseSelectionnerEtudiant = main.askForInput(questionSelectionnerEtudiant);
 
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT projet.selectionner_etudiant(?,?);");
-                        int i = 0;
-                        for (String reponse : reponseSelectionnerEtudiant) {
-                            ps.setString(i + 1, reponse);
-                            i++;
-                        }
+                        PreparedStatement ps = conn.prepareStatement("SELECT projet.selectionner_etudiant(?, ?, ?);");
+                        ps.setString(1, reponseSelectionnerEtudiant[0]);
+                        ps.setString(2, reponseSelectionnerEtudiant[1]);
+                        ps.setString(3, codeEntreprise);
 
                         if (ps.execute()) {
                             System.out.println("Selection de l'etudiant reussie\n");

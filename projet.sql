@@ -220,64 +220,61 @@ motivations de l’étudiant. Si le code ne correspond pas à une offre de l’e
 qu’il n’y a pas de candidature pour cette offre, le message suivant sera affiché “Il n'y a
 pas de candidatures pour cette offre ou vous n'avez pas d'offre ayant ce code”.
   */
-
-CREATE OR REPLACE FUNCTION projet.voir_candidatures_par_entreprise(_id_entreprise VARCHAR(3))
-    RETURNS TABLE
-            (
-                code_offre_stage VARCHAR(5),
-                etat             VARCHAR(50),
-                nom_etudiant     VARCHAR(100),
-                prenom_etudiant  VARCHAR(100),
-                mail_etudiant    VARCHAR(50),
-                motivation       VARCHAR(1000)
-            )
+CREATE OR REPLACE FUNCTION projet.voir_candidatures_par_entreprise(_id_entreprise VARCHAR(3), _code_offre_stage VARCHAR(5))
+    RETURNS TABLE(
+       etat VARCHAR(17),
+       semestre VARCHAR(2),
+       nom VARCHAR(100),
+       prenom VARCHAR(100),
+       mail VARCHAR(50), 
+       motivation VARCHAR(1000) 
+)
 AS
 $$
 DECLARE
+operation RECORD;
+sortie RECORD;
 BEGIN
-    IF NOT EXISTS(SELECT 1 FROM projet.offres_stage WHERE id_entreprise = _id_entreprise) THEN
-        RAISE EXCEPTION 'Il n''y a pas d''offre pour cette entreprise';
-END IF;
-RETURN QUERY
-SELECT c.code_offre_stage,
-       c.etat,
-       e.nom,
-       e.prenom,
-       e.mail,
-       c.motivation
-FROM projet.candidatures c
-         JOIN
-     projet.etudiants e ON c.id_etudiant = e.id_etudiant
-         JOIN
-     projet.offres_stage os ON c.code_offre_stage = os.code_offre_stage
-WHERE os.id_entreprise = _id_entreprise;
+    IF NOT EXISTS(SELECT * FROM projet.offres_stage WHERE id_entreprise = _id_entreprise AND code_offre_stage = _code_offre_stage) THEN
+        RAISE EXCEPTION 'Il n''y a pas de candidatures pour cette offre ou vous n''avez pas d''offre ayant ce code';
+    END IF;
 
+    RETURN QUERY SELECT os.etat, os.semestre, e.nom, e.prenom, e.mail, c.motivation
+        FROM projet.candidatures c, projet.offres_stage os, projet.etudiants e
+        WHERE os.code_offre_stage = _code_offre_stage 
+            AND c.code_offre_stage = os.code_offre_stage
+            AND c.id_etudiant = e.id_etudiant;
+              
 END;
 $$ LANGUAGE plpgsql;
 
 
-
 --Entreprise .6
-CREATE OR REPLACE FUNCTION projet.selectionner_etudiant(_code_stage VARCHAR(3), _mail_etudiant VARCHAR(100)) RETURNS INTEGER AS
+CREATE OR REPLACE FUNCTION projet.selectionner_etudiant(_code_stage VARCHAR(3), _mail_etudiant VARCHAR(100), _code_entreprise VARCHAR(3)) RETURNS INTEGER AS
 $$
-    --L’opération échouera si l’offre de stage n’est pas une offre de l’entreprise => A FAIRE EN JAVA
 DECLARE
 id_candidat INTEGER;
 BEGIN
+IF NOT EXISTS (SELECT * FROM projet.offres_stage os WHERE os.code_offre_stage = _code_stage AND os.id_entreprise = _code_entreprise) THEN
+    RAISE 'Ceci n''est pas votre offre de stage';
+END IF;
 UPDATE projet.offres_stage SET etat = 'Attribuée' WHERE code_offre_stage = _code_stage;
 
 SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO id_candidat;
-UPDATE projet.candidatures SET etat = 'Acceptée' WHERE id_etudiant = id_candidat;
+UPDATE projet.candidatures SET etat = 'Acceptée' WHERE id_etudiant = id_candidat AND code_offre_stage = _code_stage;
 RETURN id_candidat;
 END;
 $$ LANGUAGE plpgsql;
 
 
 --Entreprise .7
-CREATE OR REPLACE FUNCTION projet.annuler_stage(_code_stage VARCHAR(3)) RETURNS VOID AS
+CREATE OR REPLACE FUNCTION projet.annuler_stage(_code_stage VARCHAR(5), _code_entreprise VARCHAR(3)) RETURNS VOID AS
 $$
 DECLARE
 BEGIN
+IF NOT EXISTS (SELECT os.* FROM projet.offres_stage os WHERE os.code_offre_stage = _code_stage AND os.id_entreprise = _code_entreprise)
+    THEN RAISE 'Vous ne pouvez pas annuler une offre qui n est pas la votre';
+END IF;
 UPDATE projet.offres_stage SET etat = 'Annulée' WHERE code_offre_stage = _code_stage;
 END;
 $$ LANGUAGE plpgsql;
@@ -288,13 +285,6 @@ $$ LANGUAGE plpgsql;
 --connexion etudiant
 
 --Etudiant .1
-/*YA
-  Voir toutes les offres de stage dans l’état « validée » correspondant au semestre où
-l’étudiant fera son stage. Pour une offre de stage, on affichera son code, le nom de
-l’entreprise, son adresse, sa description et les mots-clés (séparés par des virgules sur
-une même ligne).
-  */
---todo le faire en view
 CREATE VIEW projet.get_offres_stage_valides AS
 SELECT et.mail AS mail_etudiant,
        os.code_offre_stage,
@@ -431,7 +421,7 @@ BEGIN
        (OLD.etat = 'Attribuée' AND NEW.etat != 'Attribuée') OR
        (OLD.etat = 'Annulée' AND NEW.etat != 'Annulée')
     THEN
-        RAISE 'Changement d''état non valide';
+        RAISE 'Changement d''état de l''offre non valide';
 END IF;
 RETURN NEW;
 END;
@@ -451,7 +441,7 @@ DECLARE
 BEGIN
     IF ((old.etat = 'Annulée' OR old.etat = 'Acceptée' OR old.etat = 'Refusée') AND old.etat != new.etat)
     THEN
-        RAISE 'Chanement d etat non valide';
+        RAISE 'Chanement d etat de candidature non valide';
 END IF;
 RETURN new;
 END;
