@@ -132,7 +132,7 @@ public class ProgrammeProfesseur{
                     break;
                 case "7":
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_etudiants_sans_stages;");
+                        PreparedStatement ps = conn.prepareStatement("SELECT DISTINCT * FROM projet.voir_etudiants_sans_stages;");
                         main.displayData(ps.executeQuery());
                     } catch (SQLException e) {
                         e.printStackTrace();

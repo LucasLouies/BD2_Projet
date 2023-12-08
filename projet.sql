@@ -8,7 +8,7 @@ CREATE TABLE projet.etudiants
     semestre_du_stage         VARCHAR(2)         NOT NULL CHECK (semestre_du_stage SIMILAR TO 'Q[1-2]'),
     mdp                       VARCHAR(100)       NOT NULL CHECK (mdp <> ''),
     nb_candidature_en_attente INTEGER            NOT NULL DEFAULT 0 CHECK ( nb_candidature_en_attente >= 0 ),
-    mail                      VARCHAR(50) UNIQUE NOT NULL CHECK ( mail SIMILAR TO '\w+\.\w+@[student\.]{0,1}vinci\.be')
+    mail                      VARCHAR(50) UNIQUE NOT NULL CHECK ( mail SIMILAR TO '\w+\.\w+@student\.vinci\.be')
 );
 
 CREATE TABLE projet.entreprises
@@ -316,37 +316,6 @@ WHERE os.etat = 'Validée'
 GROUP BY et.mail, os.code_offre_stage, e.nom, e.adresse, os.description;
 
 --Etudiant .2
-/*YA
-  Recherche d’une offre de stage par mot clé. Cette recherche n’affichera que les offres de stages validées
-  et correspondant au semestre où l’étudiant fera son stage.
-  Les offres de stage seront affichées comme au point précédent.
-*/
---todo le faire en view
-/*
-CREATE OR REPLACE FUNCTION projet.rechercher_offres_par_mot_cle(_etudiant_mail VARCHAR(50), _mot_cle VARCHAR(50))
-    RETURNS TABLE
-            (
-                code_offre_stage   VARCHAR(5),
-                nom_entreprise     VARCHAR(100),
-                adresse_entreprise VARCHAR(100),
-                description        VARCHAR(50),
-                mots_cles          VARCHAR
-            )
-AS
-$$
-DECLARE
-    temp_etudiant_id INTEGER;
-BEGIN
-    SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _etudiant_mail INTO temp_etudiant_id;
-    RETURN QUERY
-        SELECT *
-        FROM projet.get_offres_stage_valides(_etudiant_mail) AS result
-        WHERE result.mots_cles ILIKE '%' || _mot_cle || '%'; -- Filtrer par mot clé
-
-END;
-$$ LANGUAGE plpgsql;
-*/
-
 CREATE VIEW projet.rechercher_offres_par_mot_cle AS
 SELECT et.mail,
        os.code_offre_stage,
@@ -370,27 +339,18 @@ GROUP BY et.mail, os.code_offre_stage, e.nom, e.adresse, os.description;
 
 
 --Etudiant .3
-/*YA
-  Poser sa candidature. Pour cela, il doit donner le code de l’offre de stage et donner ses motivations sous format textuel.
-  Il ne peut poser de candidature s’il a déjà une candidature acceptée,
-  s’il a déjà posé sa candidature pour cette offre,
-  si l’offre n’est pas dans l’état validée ou si l’offre ne correspond pas au bon semestre.
-  */
 CREATE
 OR REPLACE FUNCTION projet.poser_candidature(_mail_etudiant VARCHAR(50), _motivation VARCHAR(1000),
-                                                 _code_offre_stage VARCHAR(5)) RETURNS INTEGER
+                                                 _code_offre_stage VARCHAR(5)) RETURNS VOID
 AS
 $$
 DECLARE
-_id_candidature INTEGER;
     _id_etudiant    INTEGER;
 BEGIN
 SELECT e.id_etudiant FROM projet.etudiants e WHERE e.mail = _mail_etudiant INTO _id_etudiant;
 INSERT INTO projet.candidatures (etat, motivation, code_offre_stage, id_etudiant)
-VALUES ('En attente', _motivation, _code_offre_stage, _id_etudiant)
-    RETURNING id_candidature INTO _id_candidature;
-
-RETURN _id_candidature;
+VALUES ('En attente', _motivation, _code_offre_stage, _id_etudiant);
+    
 END;
 $$ LANGUAGE plpgsql;
 

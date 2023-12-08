@@ -147,8 +147,9 @@ public class ProgrammeEntreprise{
                     String[] reponseAnnulerStage = main.askForInput(questionAnnulerStage);
 
                     try {
-                        PreparedStatement ps = conn.prepareStatement("SELECT projet.annuler_stage(?);");
+                        PreparedStatement ps = conn.prepareStatement("SELECT projet.annuler_stage(?, ?);");
                         ps.setString(1, reponseAnnulerStage[0]);
+                        ps.setString(2, codeEntreprise);
 
                         if (ps.execute()) {
                             System.out.println("Annulation du stage reussie\n");
