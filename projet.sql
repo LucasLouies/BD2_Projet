@@ -416,7 +416,7 @@ GRANT SELECT ON projet.entreprises TO mohamednori;
 
 --Etudiant
 GRANT INSERT, SELECT, UPDATE ON projet.candidatures TO youssefabouhamid;
-GRANT SELECT ON projet.etudiants TO youssefabouhamid;
+GRANT SELECT, UPDATE ON projet.etudiants TO youssefabouhamid;
 GRANT SELECT ON projet.offres_stage TO youssefabouhamid;
 GRANT SELECT ON projet.entreprises TO youssefabouhamid;
 GRANT SELECT ON projet.mots_cle_stage TO youssefabouhamid;
@@ -424,6 +424,7 @@ GRANT SELECT ON projet.mots_cle TO youssefabouhamid;
 GRANT SELECT ON projet.get_offres_stage_valides TO youssefabouhamid;
 GRANT SELECT ON projet.rechercher_offres_par_mot_cle TO youssefabouhamid;
 GRANT SELECT ON projet.voirOffresCandidatureEtudiant TO youssefabouhamid;
+GRANT USAGE, SELECT ON SEQUENCE projet.candidatures_id_candidature_seq TO youssefabouhamid;
 
 
 --Triggers__________________________________________________________________________________________________________________________________________________________
