@@ -1,6 +1,7 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ProgrammeEntreprise{
@@ -23,6 +24,23 @@ public class ProgrammeEntreprise{
         String[] identifiantsEntreprise = main.askForInput(questionIdentificationEntreprise);
 
         String codeEntreprise = identifiantsEntreprise[0];
+
+        try {
+                PreparedStatement ps = conn.prepareStatement("SELECT projet.connexionEntreprise(?)");
+                ps.setString(1, codeEntreprise);
+
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                String hashedMdp = rs.getString(1);
+
+                if(!BCrypt.checkpw(identifiantsEntreprise[1], hashedMdp)){
+                    System.out.println("Identifiant erronee");
+                    System.exit(1);
+                }
+            }catch (SQLException e){
+                System.out.println("Erreur lors de l'identification");
+                e.printStackTrace();
+            }
 
         boolean fini = false;
 

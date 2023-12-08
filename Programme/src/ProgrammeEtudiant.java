@@ -1,6 +1,7 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ProgrammeEtudiant{
@@ -22,6 +23,24 @@ public class ProgrammeEtudiant{
 
         String[] identifiantsEtudiant = main.askForInput(questionIdentifiantEtudiant);
         String mailEtudiant = identifiantsEtudiant[0];
+
+        try {
+            PreparedStatement ps = conn.prepareStatement("SELECT projet.connexionEtudiant(?)");
+            ps.setString(1, mailEtudiant);
+
+            ResultSet rs = ps.executeQuery();
+            rs.next();
+
+            String hashedMdp = rs.getString(1);
+
+            if(!BCrypt.checkpw(identifiantsEtudiant[1], hashedMdp)){
+                System.out.println("Identifiant erronee");
+                System.exit(1);
+            }
+        }catch (SQLException e){
+            System.out.println("Erreur lors de l'identification");
+            e.printStackTrace();
+        }
 
         System.out.println("Voici la section etudiant !");
         while (!fini){

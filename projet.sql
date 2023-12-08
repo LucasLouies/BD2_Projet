@@ -147,6 +147,15 @@ WHERE o.id_etudiant = et.id_etudiant
 --ENTREPRISE________________________________________________________________________________________________________________________
 
 --connexion entreprise
+CREATE OR REPLACE FUNCTION projet.connexionEntreprise(_code_entreprise VARCHAR(3)) RETURNS VARCHAR(100) AS
+$$
+DECLARE
+hashedMdp VARCHAR(100);
+BEGIN
+SELECT e.mdp FROM projet.entreprises e WHERE e.id_entreprise = _code_entreprise INTO hashedMdp;
+RETURN hashedMdp;
+END;
+$$ LANGUAGE plpgsql;
 
 --Entreprise .1
 CREATE OR REPLACE FUNCTION projet.encoder_offre_stage(_description VARCHAR(50), _code_entreprise VARCHAR(3),
@@ -283,6 +292,15 @@ $$ LANGUAGE plpgsql;
 --ETUDIANT__________________________________________________________________________________________________________________________________
 
 --connexion etudiant
+CREATE OR REPLACE FUNCTION projet.connexionEtudiant(_mail VARCHAR(50)) RETURNS VARCHAR(100) AS
+$$
+DECLARE
+hashedMdp VARCHAR(100);
+BEGIN
+SELECT e.mdp FROM projet.etudiants e WHERE e.mail = _mail INTO hashedMdp;
+RETURN hashedMdp;
+END;
+$$ LANGUAGE plpgsql;
 
 --Etudiant .1
 CREATE VIEW projet.get_offres_stage_valides AS
