@@ -106,7 +106,6 @@ public class ProgrammeProfesseur{
                 case "4":
                     try {
                         PreparedStatement ps = conn.prepareStatement("SELECT * FROM projet.voir_offre_stage_non_valide;");
-                        //main.displayData(ps.executeQuery());
                         ResultSet rs = ps.executeQuery();
                         main.displayData(rs);
                     } catch (Exception e) {

@@ -181,7 +181,7 @@ CREATE VIEW projet.voir_mots_cle AS
 SELECT mc.libelle
 FROM projet.mots_cle mc;
 
---Entreprise .3 todo à vérifier
+--Entreprise .3
 CREATE OR REPLACE FUNCTION projet.ajouter_mot_cle(_code_offre_stage VARCHAR(4), _libelle_mot_cle VARCHAR(50), _code_entreprise VARCHAR(3)) RETURNS VARCHAR(9) AS
 $$
 DECLARE
@@ -199,12 +199,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 --Entreprise .4
-/*YA
-Voir ses offres de stages : Pour chaque offre de stage, on affichera son code, sa
-description, son semestre, son état, le nombre de candidatures en attente et le nom
-de l’étudiant qui fera le stage (si l’offre a déjà été attribuée). Si l'offre de stage n'a pas
-encore été attribuée, il sera indiqué "pas attribuée" à la place du nom de l'étudiant.
-  */
 CREATE OR REPLACE VIEW projet.voir_offres_stage AS
 SELECT os.id_entreprise,
        os.code_offre_stage,
@@ -222,13 +216,6 @@ FROM projet.offres_stage os
 
 
 --Entreprise .5
-/*YA
-  Voir les candidatures pour une de ses offres de stages en donnant son code. Pour
-chaque candidature, on affichera son état, le nom, prénom, adresse mail et les
-motivations de l’étudiant. Si le code ne correspond pas à une offre de l’entreprise ou
-qu’il n’y a pas de candidature pour cette offre, le message suivant sera affiché “Il n'y a
-pas de candidatures pour cette offre ou vous n'avez pas d'offre ayant ce code”.
-  */
 CREATE OR REPLACE FUNCTION projet.voir_candidatures_par_entreprise(_id_entreprise VARCHAR(3), _code_offre_stage VARCHAR(5))
     RETURNS TABLE(
        etat VARCHAR(17),
@@ -320,7 +307,7 @@ FROM projet.offres_stage os
      projet.etudiants et
 
 WHERE os.etat = 'Validée'
-  AND os.semestre = et.semestre_du_stage --TODO
+  AND os.semestre = et.semestre_du_stage
 GROUP BY et.mail, os.code_offre_stage, e.nom, e.adresse, os.description;
 
 --Etudiant .2
@@ -364,12 +351,6 @@ $$ LANGUAGE plpgsql;
 
 
 --Etudiant .4
-/*YA
-Voir les offres de stage pour lesquels l’étudiant a posé sa candidature. Pour chaque
-offre, on verra le code de l’offre, le nom de l’entreprise ainsi que l’état de sa
-candidature.
-*/
-
 CREATE VIEW projet.voirOffresCandidatureEtudiant AS
 SELECT os.code_offre_stage, en.nom, c.etat, os.id_etudiant, et.mail
 FROM projet.offres_stage os
@@ -379,11 +360,6 @@ FROM projet.offres_stage os
 
 
 --Etudiant .5
-/*YA
-   Annuler une candidature en précisant le code de l’offre de stage. Les candidatures ne
-peuvent être annulées que si elles sont « en attente ».
-  */
-
 CREATE OR REPLACE FUNCTION projet.annuler_candidature(_mail_etudiant VARCHAR(50), _code_offre_stage VARCHAR(5)) RETURNS VARCHAR(5) AS --fixme décrémenter nb candidature en attente
 $$
 DECLARE
@@ -407,16 +383,16 @@ GRANT USAGE ON SCHEMA projet TO mohamednori, youssefabouhamid;
 --Entreprise
 GRANT INSERT, SELECT, UPDATE ON projet.offres_stage TO mohamednori;
 GRANT SELECT ON projet.mots_cle TO mohamednori;
-GRANT INSERT, SELECT ON projet.mots_cle_stage TO mohamednori;
+GRANT INSERT ON projet.mots_cle_stage TO mohamednori;
 GRANT SELECT ON projet.etudiants TO mohamednori;
 GRANT SELECT, UPDATE ON projet.candidatures TO mohamednori;
 GRANT SELECT ON projet.voir_mots_cle TO mohamednori;
 GRANT SELECT ON projet.voir_offres_stage TO mohamednori;
 GRANT SELECT ON projet.entreprises TO mohamednori;
 
---Etudiant_
+--Etudiant
 GRANT INSERT, SELECT, UPDATE ON projet.candidatures TO youssefabouhamid;
-GRANT SELECT, UPDATE ON projet.etudiants TO youssefabouhamid;
+GRANT SELECT ON projet.etudiants TO youssefabouhamid;
 GRANT SELECT ON projet.offres_stage TO youssefabouhamid;
 GRANT SELECT ON projet.entreprises TO youssefabouhamid;
 GRANT SELECT ON projet.mots_cle_stage TO youssefabouhamid;
@@ -424,7 +400,6 @@ GRANT SELECT ON projet.mots_cle TO youssefabouhamid;
 GRANT SELECT ON projet.get_offres_stage_valides TO youssefabouhamid;
 GRANT SELECT ON projet.rechercher_offres_par_mot_cle TO youssefabouhamid;
 GRANT SELECT ON projet.voirOffresCandidatureEtudiant TO youssefabouhamid;
-GRANT USAGE, SELECT ON SEQUENCE projet.candidatures_id_candidature_seq TO youssefabouhamid;
 
 
 --Triggers__________________________________________________________________________________________________________________________________________________________
@@ -475,7 +450,6 @@ CREATE TRIGGER trigger_vérification_etat_candidature
 CREATE OR REPLACE FUNCTION projet.vérification_insert_offre_stage() RETURNS TRIGGER AS
 $$
 DECLARE
-    --id_entreprise VARCHAR(3);
 BEGIN
     --check si l'entreprise n'a pas déjà une offre de stage déjà attribuée durant ce semestre
     IF EXISTS(SELECT *
@@ -579,7 +553,6 @@ candidature_acceptee   INTEGER;
     offre_validee          INTEGER;
     semestre_correspondant INTEGER;
 BEGIN
-    -- Vérification : Il ne peut poser de candidature s’il a déjà une candidature acceptée
 SELECT COUNT(*)
 INTO candidature_acceptee
 FROM projet.candidatures
@@ -589,8 +562,6 @@ WHERE id_etudiant = NEW.id_etudiant
 IF candidature_acceptee > 0 THEN
         RAISE 'Vous avez déjà une candidature acceptée.';
 END IF;
-
-    -- Vérification : S’il a déjà posé sa candidature pour cette offre
 SELECT COUNT(*)
 INTO candidature_existante
 FROM projet.candidatures
@@ -601,7 +572,6 @@ IF candidature_existante > 0 THEN
         RAISE 'Vous avez déjà posé une candidature pour cette offre.';
 END IF;
 
-    -- Vérification : Si l’offre n’est pas dans l’état validée
 SELECT COUNT(*)
 INTO offre_validee
 FROM projet.offres_stage
@@ -612,7 +582,6 @@ IF offre_validee = 0 THEN
         RAISE 'Cette offre de stage n''est pas dans l''état validée.';
 END IF;
 
-    -- Vérification : Si l’offre ne correspond pas au bon semestre
 SELECT COUNT(*)
 INTO semestre_correspondant
 FROM projet.etudiants e
@@ -628,7 +597,6 @@ RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
---todo à tester et à valider
 CREATE OR REPLACE FUNCTION projet.mettre_a_jour_nb_candidature_en_attente() RETURNS TRIGGER AS
 $$
 DECLARE
@@ -649,13 +617,13 @@ RETURN new;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_verification_poser_candidature --fixme
+CREATE TRIGGER trigger_verification_poser_candidature 
     BEFORE INSERT
     ON projet.candidatures
     FOR EACH ROW
     EXECUTE PROCEDURE projet.verification_poser_candidature();
 
-CREATE TRIGGER trigger_mettre_a_jour_nb_candidature_en_attente -- TODO À TESTER
+CREATE TRIGGER trigger_mettre_a_jour_nb_candidature_en_attente
     AFTER INSERT OR UPDATE
                         ON projet.candidatures
                         FOR EACH ROW
